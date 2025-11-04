@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'Pages/splash_screen.dart';
 
 Future<void> main() async {
   // Ensures Flutter widgets are ready before running any async code
@@ -21,13 +22,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false, 
       title: 'Platoporma',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const Scaffold(
-        body: Center(child: Text('Supabase Initialized')),
-      ),
+      // Set SplashScreen as the home
+      home: SplashScreen(),
     );
   }
 }
