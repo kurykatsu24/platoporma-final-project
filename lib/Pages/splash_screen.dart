@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:platoporma/Pages/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -25,7 +26,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     // 1 Drop Animation
     dropController =
-        AnimationController(vsync: this, duration: Duration(milliseconds: 1000));
+        AnimationController(vsync: this, duration: Duration(milliseconds: 1400));
     dropAnimation = CurvedAnimation(
         parent: dropController, curve: Curves.bounceOut); // slight bounce
 
@@ -57,7 +58,26 @@ class _SplashScreenState extends State<SplashScreen>
 
       // wait 1 second, then start gradient animation
       await Future.delayed(Duration(milliseconds: 700));
-      gradientController.forward();
+      await gradientController.forward();
+
+      // 👇 After all animations are done, navigate to OnboardingScreen
+      await Future.delayed(const Duration(milliseconds: 200)); // optional pause
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                OnboardingScreen(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              // 👇 Fade (dissolve) effect
+              return FadeTransition(
+                opacity: animation,
+                child: child,
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 2000), // adjust speed
+          ),
+        );
+      }
     });
   }
 
@@ -85,8 +105,10 @@ class _SplashScreenState extends State<SplashScreen>
             // Gradient that transitions in
             final gradient = LinearGradient(
               colors: [
-                Color.lerp(Color.fromARGB(255, 199, 68, 36), Color(0xFFEE795C), gradientProgress.value)!,
-                Color.lerp(Color(0xFFEE795C), Color(0XFFCCEDD8), gradientProgress.value)!,
+                Color.lerp(Color.fromARGB(255, 199, 68, 36),
+                        Color(0xFFEE795C), gradientProgress.value)!,
+                Color.lerp(Color(0xFFEE795C), Color(0XFFCCEDD8),
+                        gradientProgress.value)!,
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
