@@ -11,15 +11,21 @@ class OnboardingScreen extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           // Background image with vignette
-          Positioned.fill(
-            child: ColorFiltered(
-              colorFilter: ColorFilter.mode(
-                Colors.black.withOpacity(0.1),
-                BlendMode.darken,
-              ),
-              child: Image.asset(
-                'assets/images/adobong_manok.png',
-                fit: BoxFit.fitHeight,
+          Positioned(
+            left: 40,   
+            top: -30,  
+            child: Transform.scale(
+              scale: 1.2, 
+              child: ColorFiltered(
+                colorFilter: ColorFilter.mode(
+                  Colors.black.withOpacity(0.1),
+                  BlendMode.darken,
+                ),
+                child: Image.asset(
+                  'assets/images/adobong_manok.png',
+                  fit: BoxFit.cover, // keeps proportions better when scaling
+                  width: MediaQuery.of(context).size.width, // match screen width
+                ),
               ),
             ),
           ),
@@ -46,6 +52,14 @@ class OnboardingScreen extends StatelessWidget {
                   topLeft: Radius.circular(40),
                   topRight: Radius.circular(40),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color.fromARGB(95, 0, 0, 0), 
+                    blurRadius: 15,  // how soft the shadow looks
+                    spreadRadius: 7, // how large the shadow area is
+                    offset: const Offset(0, 6), // move shadow (X, Y): negative Y = upward shadow
+                  ),
+                ],
               ),
               child: Padding(
                 padding:
@@ -56,9 +70,9 @@ class OnboardingScreen extends StatelessWidget {
                     const SizedBox(height: 25),
                     // Title container
                     Transform.translate(
-                      offset: const Offset(0, 0), // move upward by 25 pixels (adjust value as needed)
+                      offset: const Offset(0, 8), // move upward by 25 pixels (adjust value as needed)
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                         decoration: BoxDecoration(
                           color: const Color(0xFFCCEDD8),
                           borderRadius: BorderRadius.circular(20),
@@ -71,24 +85,26 @@ class OnboardingScreen extends StatelessWidget {
                             Column(
                               children: [
                               Transform.translate(
-                                offset: const Offset(0, 10),
+                                offset: const Offset(0, 12),
                                 child: Text(
                                   'Welcome to',
                                   style: GoogleFonts.poppins(
-                                    fontSize: 26,
+                                    fontSize: 28,
                                     fontWeight: FontWeight.w600,
                                     color: const Color(0xFF27453E),
                                     letterSpacing: -1.5,                              
                                   ),
                                 ),
-                              ),                           
-                                RichText(
+                              ),  
+                              Transform.translate(
+                                offset: const Offset(0, -5),                     
+                                child: RichText(
                                   text: TextSpan(
                                     children: [
                                       TextSpan(
                                         text: 'Plato',
                                         style: GoogleFonts.poppins(
-                                          fontSize: 42,
+                                          fontSize: 44,
                                           fontWeight: FontWeight.bold,
                                           color: const Color(0xFF27453E),
                                           letterSpacing: -2,
@@ -97,7 +113,7 @@ class OnboardingScreen extends StatelessWidget {
                                       TextSpan(
                                         text: 'Porma',
                                         style: GoogleFonts.poppins(
-                                          fontSize: 42,
+                                          fontSize: 44,
                                           fontStyle: FontStyle.italic,
                                           fontWeight: FontWeight.bold,
                                           color: const Color(0xFF27453E),
@@ -107,6 +123,7 @@ class OnboardingScreen extends StatelessWidget {
                                     ],
                                   ),
                                 ),
+                              ),
                               ],
                             ),
                             const SizedBox(width: 1),
@@ -115,7 +132,7 @@ class OnboardingScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 35),
+                    const SizedBox(height: 40),
 
                     // Description text
                     Text(
@@ -133,7 +150,7 @@ class OnboardingScreen extends StatelessWidget {
 
                     // Description text
                     Text(
-                      '“What are we cooking today?”',
+                      '“Create an account now and start cooking!”',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.dmSans(
                         fontSize: 19,
@@ -143,7 +160,7 @@ class OnboardingScreen extends StatelessWidget {
                         letterSpacing: -1,        
                       ),
                     ),
-                    const SizedBox(height: 55),
+                    const SizedBox(height: 45),
 
                     // Buttons
                     Row(
@@ -153,9 +170,9 @@ class OnboardingScreen extends StatelessWidget {
                           onPressed: () {},
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFEE795C),
-                            fixedSize: const Size(130, 45),
+                            fixedSize: const Size(180, 60),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(35),
                             ),
                           ),
                           child: Text(
@@ -163,7 +180,7 @@ class OnboardingScreen extends StatelessWidget {
                             style: GoogleFonts.poppins(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
-                              fontSize: 15,
+                              fontSize: 16,
                               letterSpacing: -0.5,
                             ),
                           ),
@@ -174,11 +191,11 @@ class OnboardingScreen extends StatelessWidget {
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(
                               color: Color(0xFFEE795C),
-                              width: 2,
+                              width: 2.5,
                             ),
-                            fixedSize: const Size(130, 45),
+                            fixedSize: const Size(180, 60),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(35),
                             ),
                           ),
                           child: Text(
@@ -186,7 +203,7 @@ class OnboardingScreen extends StatelessWidget {
                             style: GoogleFonts.poppins(
                               color: const Color(0xFFEE795C),
                               fontWeight: FontWeight.w600,
-                              fontSize: 15,
+                              fontSize: 16,
                               letterSpacing: -0.5,
                             ),
                           ),
