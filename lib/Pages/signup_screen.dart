@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:platoporma/Pages/onboarding_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -28,7 +29,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 Positioned(
                   width: 60,
                   height: 60,
-                  top: 60,
+                  top: 50,
                   left: 30,
                   child: Container(
                     decoration: BoxDecoration(                
@@ -46,8 +47,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       iconSize: 35,         
                       icon: const Icon(Icons.arrow_back, color: Colors.black),
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.pushReplacement(
+                          context,
+                          PageRouteBuilder(
+                            transitionDuration: const Duration(milliseconds: 500),
+                            pageBuilder: (context, animation, secondaryAnimation) => const OnboardingScreen(),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              const begin = Offset(-1.0, 0.0); // slide in from left to right
+                              const end = Offset.zero;
+                              final curve = Curves.easeInOut;
+
+                              final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                              return SlideTransition(
+                                position: animation.drive(tween),
+                                child: child,
+                              );
+                            },
+                          ),
+                        );
                       },
+
                     ),
                   ),
                 ),

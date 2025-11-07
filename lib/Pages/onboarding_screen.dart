@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:platoporma/Pages/signup_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -20,7 +21,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     // Spring pop animation for logo
     _logoController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1200),
     );
 
     _scaleAnimation = CurvedAnimation(
@@ -29,7 +30,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     );
 
     // Start animation after slight delay (to sync with splash fade)
-    Future.delayed(const Duration(milliseconds: 1200), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       _logoController.forward();
     });
   }
@@ -228,8 +229,29 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         ),
                         const SizedBox(width: 20),
                         OutlinedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              PageRouteBuilder(
+                                transitionDuration: const Duration(milliseconds: 500),
+                                pageBuilder: (context, animation, secondaryAnimation) => const SignUpScreen(),
+                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                  const begin = Offset(1.0, 0.0); // slide in from right to left
+                                  const end = Offset.zero;
+                                  final curve = Curves.easeInOut;
+
+                                  final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                                  return SlideTransition(
+                                    position: animation.drive(tween),
+                                    child: child,
+                                  );
+                                },
+                              ),
+                            );
+                          },
                           style: OutlinedButton.styleFrom(
+                            overlayColor: const Color.fromARGB(255, 218, 101, 71).withOpacity(0.15),
                             side: const BorderSide(
                               color: Color(0xFFEE795C),
                               width: 2.5,
