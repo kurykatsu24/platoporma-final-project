@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:platoporma/Pages/onboarding_screen.dart';
-import 'package:platoporma/Pages/login_screen.dart';
+import 'package:platoporma/Pages/signup_screen.dart'; 
 
-
-class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +67,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ),
                         );
                       },
-
                     ),
                   ),
                 ),
@@ -109,7 +106,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    'Sign-Up',
+                                    'Login',
                                     style: GoogleFonts.poppins(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 35,
@@ -123,19 +120,36 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             const SizedBox(height: 30),
 
                             // Input fields
-                            _buildTextField('First Name'),
-                            _buildTextField('Last Name'),
                             _buildTextField('Email Address'),
-                            _buildPasswordField('Password', true),
-                            _buildPasswordField('Confirm Password', false),
-                            const SizedBox(height: 20),
+                            _buildPasswordField('Password'),
+                            const SizedBox(height: 1),
+                            
+                            // Forgot Password text
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: GestureDetector(
+                                onTap: () {
+                                  // TODO: Navigate to Forgot Password screen
+                                },
+                                child: Text(
+                                  'Forgot Password?',
+                                  style: GoogleFonts.dmSans(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.6),
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 30),
 
-                            // Already have account text
+                            // Don't have account text
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'Already have an account? ',
+                                  "Don't have an account? ",
                                   style: GoogleFonts.dmSans(
                                     fontSize: 16,
                                     color: Colors.black.withOpacity(0.6),
@@ -143,16 +157,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   ),
                                 ),
                                 GestureDetector(
-                                    onTap: () {
+                                  onTap: () {
                                     Navigator.pushReplacement(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => const LoginScreen(),
+                                        builder: (context) => const SignUpScreen(),
                                       ),
                                     );
                                   },
                                   child: Text(
-                                    'Login',
+                                    'Sign-Up',
                                     style: GoogleFonts.dmSans(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -165,11 +179,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ),
                             const SizedBox(height: 35),
 
-                            // Complete registration button
+                            // Login button
                             SizedBox(                      
                               child: ElevatedButton(
                                 onPressed: () {
-                                  // TODO: Complete registration logic
+                                  // TODO: Login logic
                                 },
                                 style: ElevatedButton.styleFrom(
                                   fixedSize: const Size(300, 60),
@@ -179,7 +193,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   ),
                                 ),
                                 child: Text(
-                                  'Complete Registration',
+                                  'Login',
                                   style: GoogleFonts.poppins(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
@@ -198,7 +212,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 // Logo stacked on top of the white box
                 Positioned(
-                  top: 110,
+                  top: 200,
                   child: Image.asset(
                     'assets/images/platoporma_logo_whitebg1.png',
                     width: 120,
@@ -241,12 +255,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   // Password field with toggle
-  Widget _buildPasswordField(String label, bool isPasswordField) {
-    final isMainPassword = isPasswordField;
+  Widget _buildPasswordField(String label) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: TextField(
-        obscureText: isMainPassword ? _obscurePassword : _obscureConfirmPassword,
+        obscureText: _obscurePassword,
         style: GoogleFonts.dmSans(
           fontSize: 16,
           color: Colors.black.withOpacity(0.6),
@@ -259,18 +272,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
           suffixIcon: IconButton(
             icon: Icon(
-              (isMainPassword ? _obscurePassword : _obscureConfirmPassword)
-                  ? Icons.visibility_outlined
-                  : Icons.visibility,
+              _obscurePassword ? Icons.visibility_outlined : Icons.visibility,
               color: Colors.black.withOpacity(0.4),
             ),
             onPressed: () {
               setState(() {
-                if (isMainPassword) {
-                  _obscurePassword = !_obscurePassword;
-                } else {
-                  _obscureConfirmPassword = !_obscureConfirmPassword;
-                }
+                _obscurePassword = !_obscurePassword;
               });
             },
           ),

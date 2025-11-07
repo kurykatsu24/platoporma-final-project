@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:platoporma/Pages/signup_screen.dart';
+import 'package:platoporma/Pages/login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -209,8 +210,29 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              PageRouteBuilder(
+                                transitionDuration: const Duration(milliseconds: 500),
+                                pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+                                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                  const begin = Offset(1.0, 0.0); // slide in from right to left
+                                  const end = Offset.zero;
+                                  final curve = Curves.easeInOut;
+
+                                  final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                                  return SlideTransition(
+                                    position: animation.drive(tween),
+                                    child: child,
+                                  );
+                                },
+                              ),
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
+                            overlayColor: const Color.fromARGB(255, 201, 52, 14).withOpacity(0.50),
                             backgroundColor: const Color(0xFFEE795C),
                             fixedSize: const Size(180, 60),
                             shape: RoundedRectangleBorder(
