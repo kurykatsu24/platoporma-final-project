@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:platoporma/Pages/onboarding_screen.dart';
+import 'package:platoporma/Pages/login_screen.dart';
+
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -141,8 +143,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: () {
-                                    // TODO: Navigate to login
+                                    onTap: () {
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const LoginScreen(),
+                                      ),
+                                    );
                                   },
                                   child: Text(
                                     'Login',
