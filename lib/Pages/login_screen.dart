@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:platoporma/Pages/onboarding_screen.dart';
 import 'package:platoporma/Pages/signup_screen.dart'; 
+import 'package:platoporma/Pages/login_completion_screen.dart'; 
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -182,10 +183,17 @@ class _LoginScreenState extends State<LoginScreen> {
                             // Login button
                             SizedBox(                      
                               child: ElevatedButton(
-                                onPressed: () {
-                                  // TODO: Login logic
+                                onPressed: () async {
+                                  await Future.delayed(const Duration(milliseconds: 150));
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const LoginCompletionScreen(),
+                                    ),
+                                  );
                                 },
                                 style: ElevatedButton.styleFrom(
+                                  overlayColor: const Color.fromARGB(255, 201, 52, 14).withOpacity(0.50),
                                   fixedSize: const Size(300, 60),
                                   backgroundColor: const Color(0xFFEE795C),
                                   shape: RoundedRectangleBorder(
