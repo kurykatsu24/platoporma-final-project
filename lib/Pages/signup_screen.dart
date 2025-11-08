@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:platoporma/Pages/onboarding_screen.dart';
 import 'package:platoporma/Pages/login_screen.dart';
+import 'package:platoporma/Pages/signup_completion_screen.dart';
 
 
 class SignUpScreen extends StatefulWidget {
@@ -168,10 +169,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             // Complete registration button
                             SizedBox(                      
                               child: ElevatedButton(
-                                onPressed: () {
-                                  // TODO: Complete registration logic
+                                onPressed: () async {
+                                  await Future.delayed(const Duration(milliseconds: 150));
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const SignUpCompletionScreen(),
+                                    ),
+                                  );
                                 },
                                 style: ElevatedButton.styleFrom(
+                                  overlayColor: const Color.fromARGB(255, 201, 52, 14).withOpacity(0.50),
                                   fixedSize: const Size(300, 60),
                                   backgroundColor: const Color(0xFFEE795C),
                                   shape: RoundedRectangleBorder(
