@@ -3,7 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:platoporma/Pages/onboarding_screen.dart';
 import 'package:platoporma/Pages/login_screen.dart';
 import 'package:platoporma/Pages/signup_completion_screen.dart';
-import 'package:platoporma/Auth/validators.dart'; 
+import 'package:platoporma/Auth/validators.dart';
+import 'package:platoporma/Auth/auth_service.dart';
 
 
 class SignUpScreen extends StatefulWidget {
@@ -16,6 +17,9 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+
+  // Create an instance of your AuthService
+  final AuthService _authService = AuthService();
 
   // CONTROLLERS FOR VALIDATION
   final _firstNameController = TextEditingController();
@@ -53,7 +57,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   // ✅ LOCAL VALIDATION CHECKS
-  void _validateAndSubmit() {
+  Future<void> _validateAndSubmit() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
@@ -74,13 +78,25 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
-    // ✅ Passed local validation — proceed to next page
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const SignUpCompletionScreen(),
-      ),
-    );
+    try {
+      // 👇 Call Supabase signup via AuthService
+      final user = await _authService.signUp(email, password);
+
+      if (user != null) {
+        // ✅ Successful signup — proceed to completion screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const SignUpCompletionScreen(),
+          ),
+        );
+      } else {
+        _showError('Signup failed. Please try again.');
+      }
+    } catch (e) {
+      // 👇 Handle Supabase or network errors
+      _showError(e.toString());
+    }
   }
 
   // Snackbar Layout for error messages
