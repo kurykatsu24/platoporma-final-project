@@ -80,10 +80,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     try {
       // 👇 Call Supabase signup via AuthService
-      final user = await _authService.signUp(email, password);
+      final error = await _authService.signUp(email, password);
 
-      if (user != null) {
-        // ✅ Successful signup — proceed to completion screen
+      if (error == null) {
+        // ✅ Success
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -91,7 +91,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
         );
       } else {
-        _showError('Signup failed. Please try again.');
+        // ❌ Failure (e.g. duplicate email or network issue)
+        _showError(error);
       }
     } catch (e) {
       // 👇 Handle Supabase or network errors
