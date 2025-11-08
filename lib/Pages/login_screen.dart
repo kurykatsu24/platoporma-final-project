@@ -3,7 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:platoporma/Pages/onboarding_screen.dart';
 import 'package:platoporma/Pages/signup_screen.dart'; 
 import 'package:platoporma/Pages/login_completion_screen.dart';
-import 'package:platoporma/Auth/validators.dart'; 
+import 'package:platoporma/Auth/validators.dart';
+import 'package:platoporma/Auth/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,6 +19,9 @@ class _LoginScreenState extends State<LoginScreen> {
   // TextEditingControllers to track input
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  // Initialize AuthService
+  final AuthService _authService = AuthService();
 
   // Enable button state
   bool _isButtonEnabled = false;
@@ -52,7 +56,8 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _validateAndLogin() {
+  // ✅ LOGIN VALIDATION AND SUPABASE AUTH
+  Future<void> _validateAndLogin() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
@@ -67,13 +72,25 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // ✅ If local validation passes
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const LoginCompletionScreen(),
-      ),
-    );
+    try {
+      // 👇 Call Supabase sign-in via AuthService
+      final user = await _authService.signIn(email, password);
+
+      if (user != null) {
+        // ✅ Successful login — go to completion screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const LoginCompletionScreen(),
+          ),
+        );
+      } else {
+        _showErrorMessage("Invalid login credentials. Please try again.");
+      }
+    } catch (e) {
+      // 👇 Handle Supabase/network errors
+      _showErrorMessage(e.toString());
+    }
   }
 
   @override

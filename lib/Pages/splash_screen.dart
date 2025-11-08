@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:platoporma/Pages/signup_completion_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:platoporma/Pages/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -60,21 +62,30 @@ class _SplashScreenState extends State<SplashScreen>
       await Future.delayed(Duration(milliseconds: 700));
       await gradientController.forward();
 
-      // 👇 After all animations are done, navigate to OnboardingScreen
+      // After all animations are done, check auth state and navigate accordingly
       await Future.delayed(const Duration(milliseconds: 200)); // optional pause
       if (mounted) {
+        final supabase = Supabase.instance.client;
+        
+        // Wait for Supabase to restore session
+        await Future.delayed(const Duration(milliseconds: 500));
+        final user = supabase.auth.currentUser;
+
+        Widget nextScreen;
+
+        if (user != null) {
+          nextScreen = const SignUpCompletionScreen();
+        } else {
+          nextScreen = const OnboardingScreen();
+        }
+
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                OnboardingScreen(),
+            pageBuilder: (context, animation, secondaryAnimation) => nextScreen,
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              // 👇 Fade (dissolve) effect
-              return FadeTransition(
-                opacity: animation,
-                child: child,
-              );
+              return FadeTransition(opacity: animation, child: child);
             },
-            transitionDuration: const Duration(milliseconds: 2000), // adjust speed
+            transitionDuration: const Duration(milliseconds: 2000),
           ),
         );
       }
