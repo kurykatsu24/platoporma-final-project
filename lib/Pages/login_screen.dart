@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:platoporma/Pages/onboarding_screen.dart';
 import 'package:platoporma/Pages/signup_screen.dart'; 
-import 'package:platoporma/Pages/login_completion_screen.dart'; 
+import 'package:platoporma/Pages/login_completion_screen.dart';
+import 'package:platoporma/Auth/validators.dart'; 
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,6 +14,74 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
+
+  // TextEditingControllers to track input
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  // Enable button state
+  bool _isButtonEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController.addListener(_updateButtonState);
+    _passwordController.addListener(_updateButtonState);
+  }
+
+  void _updateButtonState() {
+    setState(() {
+      _isButtonEnabled = Validators.areAllFieldsFilled([
+        _emailController.text,
+        _passwordController.text,
+      ]);
+    });
+  }
+
+  // Snackbar Layout for error messages
+  void _showErrorMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: GoogleFonts.dmSans(fontSize: 16)),
+        backgroundColor: Colors.red.shade400,
+        behavior: SnackBarBehavior.floating,
+        elevation: 5,
+        margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  void _validateAndLogin() {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (!Validators.isValidEmail(email)) {
+      _showErrorMessage("Please enter a valid email address.");
+      return;
+    }
+
+    if (!Validators.isValidPassword(password)) {
+      _showErrorMessage(
+          "Password must be at least 8 characters and contain both letters and numbers.");
+      return;
+    }
+
+    // ✅ If local validation passes
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const LoginCompletionScreen(),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,8 +190,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 30),
 
                             // Input fields
-                            _buildTextField('Email Address'),
-                            _buildPasswordField('Password'),
+                            _buildTextField('Email Address', _emailController),
+                            _buildPasswordField('Password', _passwordController),
                             const SizedBox(height: 1),
                             
                             // Forgot Password text
@@ -182,31 +251,30 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             // Login button
                             SizedBox(                      
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  await Future.delayed(const Duration(milliseconds: 150));
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const LoginCompletionScreen(),
+                              child: Opacity(
+                                opacity: _isButtonEnabled ? 1.0 : 0.65, // disable button until filled
+                                child: ElevatedButton(
+                                  onPressed: _isButtonEnabled
+                                      ? () {
+                                          _validateAndLogin();
+                                        }
+                                      : null,
+                                  style: ElevatedButton.styleFrom(
+                                    overlayColor: const Color.fromARGB(255, 201, 52, 14).withOpacity(0.50),
+                                    fixedSize: const Size(300, 60),
+                                    backgroundColor: const Color(0xFFEE795C),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(25),
                                     ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  overlayColor: const Color.fromARGB(255, 201, 52, 14).withOpacity(0.50),
-                                  fixedSize: const Size(300, 60),
-                                  backgroundColor: const Color(0xFFEE795C),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25),
                                   ),
-                                ),
-                                child: Text(
-                                  'Login',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                    letterSpacing: -0.2,
+                                  child: Text(
+                                    'Login',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                      letterSpacing: -0.2,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -236,10 +304,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   // Custom reusable textfield
-  Widget _buildTextField(String label) {
+  Widget _buildTextField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: TextField(
+        controller: controller,
         style: GoogleFonts.dmSans(
           fontSize: 18,
           color: Colors.black.withOpacity(0.6),
@@ -263,10 +332,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   // Password field with toggle
-  Widget _buildPasswordField(String label) {
+  Widget _buildPasswordField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: TextField(
+        controller: controller,
         obscureText: _obscurePassword,
         style: GoogleFonts.dmSans(
           fontSize: 16,
