@@ -68,28 +68,28 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (!Validators.isValidPassword(password)) {
       _showErrorMessage(
-          "Password must be at least 8 characters and contain both letters and numbers.");
+        "Password must be at least 8 characters and contain both letters and numbers.",
+      );
       return;
     }
 
     try {
-      // 👇 Call Supabase sign-in via AuthService
-      final user = await _authService.signIn(email, password);
+      // Call Supabase sign-in
+      final errorMessage = await _authService.signIn(email, password);
 
-      if (user != null) {
-        // ✅ Successful login — go to completion screen
+      if (errorMessage == null) {
+        // ✅ Successful login
+        if (!mounted) return;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (context) => const LoginCompletionScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => const LoginCompletionScreen()),
         );
       } else {
-        _showErrorMessage("Invalid login credentials. Please try again.");
+        // ❌ Login failed
+        _showErrorMessage(errorMessage);
       }
     } catch (e) {
-      // 👇 Handle Supabase/network errors
-      _showErrorMessage(e.toString());
+      _showErrorMessage("Unexpected error: ${e.toString()}");
     }
   }
 
