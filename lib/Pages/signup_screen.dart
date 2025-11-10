@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:platoporma/Pages/onboarding_screen.dart';
 import 'package:platoporma/Pages/login_screen.dart';
 import 'package:platoporma/Pages/signup_completion_screen.dart';
 import 'package:platoporma/Auth/validators.dart';
 import 'package:platoporma/Auth/auth_service.dart';
+
+final supabase = Supabase.instance.client;
 
 
 class SignUpScreen extends StatefulWidget {
@@ -85,18 +88,33 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (!mounted) return;
 
       if (error == null) {
-        // Success
+        // ✅ After signup success, get the current user
+        final user = supabase.auth.currentUser;
+
+        if (user != null) {
+          // ✅ Insert a matching row in user_profiles
+          await supabase.from('user_profiles').insert({
+            'id': user.id,
+            'first_name': _firstNameController.text.trim(),
+            'last_name': _lastNameController.text.trim(),
+            'created_at': DateTime.now().toIso8601String(),
+          });
+        }
+
+        // ✅ Navigate to the completion screen
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
             transitionDuration: const Duration(milliseconds: 500),
-            pageBuilder: (context, animation, secondaryAnimation) => const SignUpCompletionScreen(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              const begin = Offset(1.0, 0.0); // slide in from right to left
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const SignUpCompletionScreen(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(1.0, 0.0);
               const end = Offset.zero;
               final curve = Curves.easeInOut;
-
-              final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              final tween = Tween(begin: begin, end: end)
+                  .chain(CurveTween(curve: curve));
 
               return SlideTransition(
                 position: animation.drive(tween),
@@ -106,14 +124,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
         );
       } else {
-        // ❌ Failure (e.g. duplicate email or network issue)
         _showError(error);
       }
     } catch (e) {
-      // 👇 Handle Supabase or network errors
       _showError(e.toString());
     }
   }
+
 
   // Snackbar Layout for error messages
   void _showError(String message) {
