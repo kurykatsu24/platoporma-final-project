@@ -82,12 +82,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
       // 👇 Call Supabase signup via AuthService
       final error = await _authService.signUp(email, password);
 
+      if (!mounted) return;
+
       if (error == null) {
-        // ✅ Success
+        // Success
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (context) => const SignUpCompletionScreen(),
+          PageRouteBuilder(
+            transitionDuration: const Duration(milliseconds: 500),
+            pageBuilder: (context, animation, secondaryAnimation) => const SignUpCompletionScreen(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              const begin = Offset(1.0, 0.0); // slide in from right to left
+              const end = Offset.zero;
+              final curve = Curves.easeInOut;
+
+              final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+              return SlideTransition(
+                position: animation.drive(tween),
+                child: child,
+              );
+            },
           ),
         );
       } else {
