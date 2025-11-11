@@ -19,18 +19,19 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   void initState() {
     super.initState();
 
-    // Spring pop animation for logo
+    //Spring Pop Animation for the logo upon entering the screen (like a pop/bounce effect)
     _logoController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     );
-
+    
+    //to be called later
     _scaleAnimation = CurvedAnimation(
       parent: _logoController,
       curve: Curves.elasticOut,
     );
 
-    // Start animation after slight delay (to sync with splash fade)
+    //initial start animation after a slight delay (to sync with splash fade)
     Future.delayed(const Duration(milliseconds: 500), () {
       _logoController.forward();
     });
@@ -48,31 +49,31 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       body: Stack(
         alignment: Alignment.center,
         children: [
-          // Background image with vignette
-          Positioned(
+          //background adobong manok(has a darken filter black)
+          Positioned( //adjusting position that matches our prototype
             left: 40,
             top: -30,
-            child: Transform.scale(
+            child: Transform.scale( //wrapped in here para mascale
               scale: 1.2,
               child: ColorFiltered(
                 colorFilter: ColorFilter.mode(
-                  Colors.black.withOpacity(0.1),
+                Colors.black.withOpacity(0.1),
                   BlendMode.darken,
                 ),
                 child: Image.asset(
                   'assets/images/adobong_manok.png',
-                  fit: BoxFit.cover, // keeps proportions better when scaling
-                  width: MediaQuery.of(context).size.width, // match screen width
+                  fit: BoxFit.cover, //set to keep proportions better when scaling
+                  width: MediaQuery.of(context).size.width,
                 ),
               ),
             ),
           ),
 
-          // Top logo
+          //Top logo (platoporma with white bg 1)
           Positioned(
             top: 55,
             child: ScaleTransition(
-              scale: _scaleAnimation,
+              scale: _scaleAnimation, //calling the scale animation as an entrance animation
               child: Image.asset(
                 'assets/images/platoporma_logo_whitebg1.png',
                 width: 110,
@@ -81,24 +82,21 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             ),
           ),
 
-          // Bottom container
+          //Container for title, subtexts and buttons for auth
           Align(
             alignment: Alignment.bottomCenter,
-            child: Container(
-              width: 500,
-              height: 412,
+            child: Container(width: 500, height: 412,
               decoration: const BoxDecoration(
                 color: Color(0xFFFDFFEC),
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(40),
-                  topRight: Radius.circular(40),
+                  topLeft: Radius.circular(40),topRight: Radius.circular(40),
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: Color.fromARGB(95, 0, 0, 0),
-                    blurRadius: 15, // how soft the shadow looks
-                    spreadRadius: 7, // how large the shadow area is
-                    offset: Offset(0, 6), // move shadow (X, Y): negative Y = upward shadow
+                    blurRadius: 15, 
+                    spreadRadius: 7, 
+                    offset: Offset(0, 6), 
                   ),
                 ],
               ),
@@ -108,9 +106,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     const SizedBox(height: 25),
-                    // Title container
-                    Transform.translate(
-                      offset: const Offset(0, 8), // move upward by 25 pixels (adjust value as needed)
+                    //Title container (include ang Welcome to PlatoPorma and fork and spoon icons with bg mint green)
+                    Transform.translate(offset: const Offset(0, 8), //to move the eleents freely
                       child: Container(
                         padding:
                             const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
@@ -141,7 +138,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                 Transform.translate(
                                   offset: const Offset(0, -5),
                                   child: RichText(
-                                    text: TextSpan(
+                                    text: TextSpan( //hiwalay ang specifications of Plato and Porma, just to apply italic style to Porma
                                       children: [
                                         TextSpan(
                                           text: 'Plato',
@@ -205,19 +202,19 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     ),
                     const SizedBox(height: 45),
 
-                    // Buttons
+                    //Buttons for Login (elevated button) and Signup (outlined button)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pushReplacement(
+                            Navigator.pushReplacement(  //slide transition navigation
                               context,
                               PageRouteBuilder(
                                 transitionDuration: const Duration(milliseconds: 500),
                                 pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
                                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                  const begin = Offset(1.0, 0.0); // slide in from right to left
+                                  const begin = Offset(1.0, 0.0); //slide in from right to left
                                   const end = Offset.zero;
                                   final curve = Curves.easeInOut;
 
@@ -232,7 +229,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            overlayColor: const Color.fromARGB(255, 201, 52, 14).withOpacity(0.50),
+                            overlayColor: const Color.fromARGB(255, 201, 52, 14).withOpacity(0.50), //styling for touchdown trigger purposes
                             backgroundColor: const Color(0xFFEE795C),
                             fixedSize: const Size(180, 60),
                             shape: RoundedRectangleBorder(
