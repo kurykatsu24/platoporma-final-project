@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:platoporma/Pages/homepage.dart';
+import 'package:platoporma/Pages/homepage_section.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginCompletionScreen extends StatefulWidget {
@@ -146,7 +146,7 @@ class _LoginCompletionScreenState extends State<LoginCompletionScreen> {
                       context,
                       PageRouteBuilder(
                         transitionDuration: const Duration(milliseconds: 500),
-                        pageBuilder: (context, animation, secondaryAnimation) => const HomePage(),
+                        pageBuilder: (context, animation, secondaryAnimation) => const HomePageSection(),
                             transitionsBuilder: (context, animation, secondaryAnimation, child) {
                               const begin = Offset(1.0, 0.0); // slide in from right to left
                               const end = Offset.zero;

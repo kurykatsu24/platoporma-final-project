@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:platoporma/Pages/profile_section.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:platoporma/Pages/splash_screen.dart';
 
 Future<void> main() async {
   // Ensures Flutter widgets are ready before running any async code
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
       title: 'Platoporma',
       theme: ThemeData(primarySwatch: Colors.blue),
       // Set SplashScreen as the home
-      home: SplashScreen(),
+      home: ProfileSection(),
     );
   }
 }

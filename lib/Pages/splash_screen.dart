@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:platoporma/Pages/homepage.dart';
+import 'package:platoporma/Pages/homepage_section.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:platoporma/Pages/onboarding_screen.dart';
 
@@ -74,7 +74,7 @@ class _SplashScreenState extends State<SplashScreen>
         Widget nextScreen;
 
         if (user != null) {
-          nextScreen = const HomePage();
+          nextScreen = const HomePageSection();
         } else {
           nextScreen = const OnboardingScreen();
         }
