@@ -88,11 +88,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (!mounted) return;
 
       if (error == null) {
-        // ✅ After signup success, get the current user
+        // after signup is successful, get the current user
         final user = supabase.auth.currentUser;
 
         if (user != null) {
-          // ✅ Insert a matching row in user_profiles
+          //insert a matching row in user_profiles
           await supabase.from('user_profiles').insert({
             'id': user.id,
             'first_name': _firstNameController.text.trim(),
@@ -101,7 +101,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           });
         }
 
-        // ✅ Navigate to the completion screen
+        //Navigate to the completion screen
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(

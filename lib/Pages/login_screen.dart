@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ✅ LOGIN VALIDATION AND SUPABASE AUTH
+  //---- LOGIN VALIDATION (local) AND SUPABASE AUTH -----
   Future<void> _validateAndLogin() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
@@ -74,11 +74,11 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     try {
-      // Call Supabase sign-in
+      //Call Supabase sign-in
       final errorMessage = await _authService.signIn(email, password);
 
       if (errorMessage == null) {
-        // ✅ Successful login
+        //successful login
         if (!mounted) return;
         Navigator.pushReplacement(
           context,

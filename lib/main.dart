@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:platoporma/Pages/profile_section.dart';
+import 'package:platoporma/Pages/splash_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
-  // Ensures Flutter widgets are ready before running any async code
+  //this ensures Flutter widgets are ready before running any async code
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Supabase
+  //initializing Supabase as our database (ONLINE)
   await Supabase.initialize(
     url: 'https://qyhvkifjstjwlbbswdoc.supabase.co',
     anonKey:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5aHZraWZqc3Rqd2xiYnN3ZG9jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMjY4MDYsImV4cCI6MjA3NzgwMjgwNn0.yVxdM0vD0jKe34XlxvGpvY9vaxCC665JRfzNBlMdlTE',
   );
 
-  // Run your app
   runApp(const MyApp());
 }
 
@@ -26,8 +25,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Platoporma',
       theme: ThemeData(primarySwatch: Colors.blue),
-      // Set SplashScreen as the home
-      home: ProfileSection(),
+      home: SplashScreen(), //this is where the app starts
     );
-  }
+  } 
 }
