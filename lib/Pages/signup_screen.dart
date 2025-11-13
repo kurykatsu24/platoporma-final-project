@@ -38,7 +38,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void initState() {
     super.initState();
 
-    // ✅ ADD LISTENERS TO UPDATE BUTTON STATE
+    //ADD LISTENERS TO UPDATE BUTTON STATE
     _firstNameController.addListener(_updateButtonState);
     _lastNameController.addListener(_updateButtonState);
     _emailController.addListener(_updateButtonState);
@@ -46,7 +46,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _confirmPasswordController.addListener(_updateButtonState);
   }
 
-  // ✅ Enable button when all fields filled
+  // Enable button when all fields filled
   void _updateButtonState() {
     setState(() {
       _isButtonEnabled = Validators.areAllFieldsFilled([
@@ -59,7 +59,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     });
   }
 
-  // ✅ LOCAL VALIDATION CHECKS
+  //LOCAL VALIDATION CHECKS
   Future<void> _validateAndSubmit() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
@@ -132,7 +132,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
 
-  // Snackbar Layout for error messages
+  //Custom Snackbar Layout for error messages
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -149,11 +149,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: const Color(0xFFFDFFEC), // Background color
       body: SafeArea(
-        child: SingleChildScrollView(  // make the entire stack scrollable
-          reverse: true,               // scroll up when keyboard opens
+        child: SingleChildScrollView(  //make the entire stack scrollable
+          reverse: true,               //scroll up when keyboard opens
           child: SizedBox(
             height: MediaQuery.of(context).size.height, // fill the screen
             child: Stack(
@@ -161,8 +162,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
               children: [
                 // Back button
                 Positioned(
-                  width: 60,
-                  height: 60,
+                  width: 48,
+                  height: 48,
                   top: 50,
                   left: 30,
                   child: Container(
@@ -178,7 +179,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ],
                     ),
                     child: IconButton(       
-                      iconSize: 35,         
+                      iconSize: 25,         
                       icon: const Icon(Icons.arrow_back, color: Colors.black),
                       onPressed: () {
                         Navigator.pushReplacement(
@@ -206,15 +207,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 150),
+                const SizedBox(height: 180),
 
                 // White box container with drop shadow
                 Padding(
-                  padding: const EdgeInsets.only(top: 40),
+                  padding: const EdgeInsets.only(top: 80),
                   child: Align(
                     alignment: Alignment.center,            
                     child: Container(              
-                      width: 420,
+                      width: screenWidth * 0.9,
                       padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -244,7 +245,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     'Sign-Up',
                                     style: GoogleFonts.poppins(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 35,
+                                      fontSize: 28,
                                       letterSpacing: -2,
                                       color: const Color(0xFF27453E),
                                     ),
@@ -252,7 +253,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 30),
+                            const SizedBox(height: 25),
 
                             // Input fields
                             _buildTextField('First Name', _firstNameController),
@@ -269,7 +270,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 Text(
                                   'Already have an account? ',
                                   style: GoogleFonts.dmSans(
-                                    fontSize: 16,
+                                    fontSize: 14,
                                     color: Colors.black.withOpacity(0.6),
                                     letterSpacing: -0.2,
                                   ),
@@ -286,7 +287,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   child: Text(
                                     'Login',
                                     style: GoogleFonts.dmSans(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                       color: const Color(0xFFEE795C),
                                       letterSpacing: -0.2,
@@ -298,15 +299,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             const SizedBox(height: 35),
 
                             // Complete registration button
-                            // Complete registration button
                             SizedBox(                      
-                              child: Opacity( // ✅ opacity for disabled state
+                              child: Opacity( //opacity for disabled state
                                 opacity: _isButtonEnabled ? 1.0 : 0.65,
                                 child: ElevatedButton(
-                                  onPressed: _isButtonEnabled ? _validateAndSubmit : null, // ✅ button disabled until all filled
+                                  onPressed: _isButtonEnabled ? _validateAndSubmit : null, //button disabled until all filled
                                   style: ElevatedButton.styleFrom(
                                     overlayColor: const Color.fromARGB(255, 201, 52, 14).withOpacity(0.50),
-                                    fixedSize: const Size(300, 60),
+                                    fixedSize: const Size(210, 48),
                                     backgroundColor: const Color(0xFFEE795C),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(25),
@@ -315,7 +315,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   child: Text(
                                     'Complete Registration',
                                     style: GoogleFonts.poppins(
-                                      fontSize: 18,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
                                       letterSpacing: -0.2,
@@ -333,11 +333,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 // Logo stacked on top of the white box
                 Positioned(
-                  top: 110,
+                  top: 65,
                   child: Image.asset(
                     'assets/images/platoporma_logo_whitebg1.png',
-                    width: 120,
-                    height: 120,
+                    width: 95,
+                    height: 95,
                   ),
                 ),
               ],
@@ -355,13 +355,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
       child: TextField(
         controller: controller,
         style: GoogleFonts.dmSans(
-          fontSize: 18,
+          fontSize: 15,
           color: Colors.black.withOpacity(0.6),
         ),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: GoogleFonts.dmSans(
-            fontSize: 18,
+            fontSize: 15,
             color: Colors.black.withOpacity(0.6),
             letterSpacing: -0.2,
           ),
@@ -385,13 +385,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
         controller: controller,
         obscureText: isMainPassword ? _obscurePassword : _obscureConfirmPassword,
         style: GoogleFonts.dmSans(
-          fontSize: 16,
+          fontSize: 15,
           color: Colors.black.withOpacity(0.6),
         ),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: GoogleFonts.dmSans(
-            fontSize: 16,
+            fontSize: 15,
             color: Colors.black.withOpacity(0.6),
           ),
           suffixIcon: IconButton(
