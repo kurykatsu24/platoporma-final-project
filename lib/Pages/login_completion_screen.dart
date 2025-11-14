@@ -53,91 +53,98 @@ class _LoginCompletionScreenState extends State<LoginCompletionScreen> {
                 // Logo
                 Image.asset(
                   'assets/images/platoporma_logo_whitebg1.png',
-                  width: 185,
-                  height: 185,
+                  width: MediaQuery.of(context).size.width * 0.38
                 ),
-                const SizedBox(height: 15),
+                const SizedBox(height: 5),
 
                 // Reused Title Container from onboarding
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 23),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFCCEDD8),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/images/fork_icon.png',
-                        width: 80,
-                        height: 80,
-                      ),
-                      const SizedBox(width: 2),
-                      Column(
-                        children: [
-                          Transform.translate(
-                            offset: const Offset(0, 10),
-                            child: Text(
-                              'Welcome to',
-                              style: GoogleFonts.poppins(
-                                fontSize: 30,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF27453E),
-                                letterSpacing: -1.5,
-                              ),
-                            ),
+                Transform.translate(
+                      offset: const Offset(0, 8),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFCCEDD8),
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          Transform.translate(
-                            offset: const Offset(0, -6),
-                            child: RichText(
-                              text: TextSpan(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Transform.translate(
+                                offset: const Offset(13, 0),
+                                child: Image.asset(
+                                  'assets/images/fork_icon.png',
+                                  width: 65,
+                                  height: 65,
+                                ),
+                              ),
+                              Column(
                                 children: [
-                                  TextSpan(
-                                    text: 'Plato',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 45,
-                                      fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF27453E),
-                                      letterSpacing: -2,
+                                  Transform.translate(
+                                    offset: const Offset(0, 12),
+                                    child: Text(
+                                      'Welcome to',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF27453E),
+                                        letterSpacing: -1.5,
+                                      ),
                                     ),
                                   ),
-                                  TextSpan(
-                                    text: 'Porma',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 45,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                      color: const Color(0xFF27453E),
-                                      letterSpacing: -2,
+                                  Transform.translate(
+                                    offset: const Offset(0, -5),
+                                    child: RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: 'Plato',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 38,
+                                              fontWeight: FontWeight.bold,
+                                              color: const Color(0xFF27453E),
+                                              letterSpacing: -2,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: 'Porma',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 38,
+                                              fontStyle: FontStyle.italic,
+                                              fontWeight: FontWeight.bold,
+                                              color: const Color(0xFF27453E),
+                                              letterSpacing: -2,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
+                              Transform.translate(
+                                offset: const Offset(-13, 0),
+                                child: Image.asset(
+                                  'assets/images/spoon_icon.png',
+                                  width: 65,
+                                  height: 65,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                      const SizedBox(width: 2),
-                      Image.asset(
-                        'assets/images/spoon_icon.png',
-                        width: 80,
-                        height: 80,
-                      ),
-                    ],
-                  ),
-                ),
+                    ),
 
 
                 
-                const SizedBox(height: 140),
+                const SizedBox(height: 100),
 
                 // --- Welcome Text ---
                 _buildCompletionText(firstName),
 
-                const SizedBox(height: 215),
+                const SizedBox(height: 150),
 
                 // --- Proceed Button ---
                 ElevatedButton(
@@ -168,7 +175,7 @@ class _LoginCompletionScreenState extends State<LoginCompletionScreen> {
                       101,
                       71,
                     ).withOpacity(0.15),
-                    fixedSize: const Size(300, 60),
+                    fixedSize: const Size(280, 48),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
                     ),
@@ -176,7 +183,7 @@ class _LoginCompletionScreenState extends State<LoginCompletionScreen> {
                   child: Text(
                     'Proceed to Homepage',
                     style: GoogleFonts.poppins(
-                      fontSize: 18,
+                      fontSize: 14 * MediaQuery.of(context).textScaleFactor,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                       letterSpacing: -0.2,
@@ -201,7 +208,7 @@ class _LoginCompletionScreenState extends State<LoginCompletionScreen> {
           'Welcome back,',
           textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
-            fontSize: 48,
+            fontSize: 42 * MediaQuery.of(context).textScaleFactor,
             height: 0.9, // tighter line height
             fontWeight: FontWeight.bold,
             letterSpacing: -2,
@@ -214,7 +221,7 @@ class _LoginCompletionScreenState extends State<LoginCompletionScreen> {
           '${firstName ?? ''}!',
           textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
-            fontSize: 55,
+            fontSize: 50 * MediaQuery.of(context).textScaleFactor,
             height: 1.2, // consistent line height
             fontWeight: FontWeight.w900,
             letterSpacing: -1,
@@ -229,7 +236,7 @@ class _LoginCompletionScreenState extends State<LoginCompletionScreen> {
           "Glad to see you again. Let's explore more recipes!",
           textAlign: TextAlign.center,
           style: GoogleFonts.dmSans(
-            fontSize: 19,
+            fontSize: 16 * MediaQuery.of(context).textScaleFactor,
             fontStyle: FontStyle.italic,
             fontWeight: FontWeight.w500,
             color: const Color(0xFF27453E),

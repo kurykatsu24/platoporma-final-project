@@ -114,8 +114,8 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 // Back button
                 Positioned(
-                  width: 60,
-                  height: 60,
+                  width: MediaQuery.of(context).size.width * 0.13,
+                  height: MediaQuery.of(context).size.height * 0.13,
                   top: 50,
                   left: 30,
                   child: Container(
@@ -131,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                     child: IconButton(       
-                      iconSize: 35,         
+                      iconSize: 25,         
                       icon: const Icon(Icons.arrow_back, color: Colors.black),
                       onPressed: () {
                         Navigator.pushReplacement(
@@ -166,7 +166,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Align(
                     alignment: Alignment.center,            
                     child: Container(              
-                      width: 420,
+                      width: MediaQuery.of(context).size.width * 0.9,   // 90% of screen
+                      height: MediaQuery.of(context).size.height * 0.58,
+
                       padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -196,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     'Login',
                                     style: GoogleFonts.poppins(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 35,
+                                      fontSize: 28 * MediaQuery.of(context).textScaleFactor,
                                       letterSpacing: -2,
                                       color: const Color(0xFF27453E),
                                     ),
@@ -221,7 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: Text(
                                   'Forgot Password?',
                                   style: GoogleFonts.dmSans(
-                                    fontSize: 15,
+                                    fontSize: 12 * MediaQuery.of(context).textScaleFactor,
                                     fontWeight: FontWeight.w600,
                                     color: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.6),
                                     letterSpacing: -0.2,
@@ -238,7 +240,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Text(
                                   "Don't have an account? ",
                                   style: GoogleFonts.dmSans(
-                                    fontSize: 16,
+                                    fontSize: 14 * MediaQuery.of(context).textScaleFactor,
                                     color: Colors.black.withOpacity(0.6),
                                     letterSpacing: -0.2,
                                   ),
@@ -255,7 +257,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   child: Text(
                                     'Sign-Up',
                                     style: GoogleFonts.dmSans(
-                                      fontSize: 16,
+                                      fontSize: 14 * MediaQuery.of(context).textScaleFactor,
                                       fontWeight: FontWeight.bold,
                                       color: const Color(0xFFEE795C),
                                       letterSpacing: -0.2,
@@ -278,7 +280,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       : null,
                                   style: ElevatedButton.styleFrom(
                                     overlayColor: const Color.fromARGB(255, 201, 52, 14).withOpacity(0.50),
-                                    fixedSize: const Size(300, 60),
+                                    fixedSize: const Size(210, 48),
                                     backgroundColor: const Color(0xFFEE795C),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(25),
@@ -287,7 +289,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   child: Text(
                                     'Login',
                                     style: GoogleFonts.poppins(
-                                      fontSize: 18,
+                                      fontSize: 14 * MediaQuery.of(context).textScaleFactor,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
                                       letterSpacing: -0.2,
@@ -304,12 +306,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
 
                 // Logo stacked on top of the white box
-                Positioned(
-                  top: 200,
-                  child: Image.asset(
-                    'assets/images/platoporma_logo_whitebg1.png',
-                    width: 120,
-                    height: 120,
+                Flexible(
+                  child: Positioned(
+                    top: MediaQuery.of(context).size.height * 0.10,
+                    child: Image.asset(
+                      'assets/images/platoporma_logo_whitebg1.png',
+                      width: MediaQuery.of(context).size.width * 0.25,
+                      height: MediaQuery.of(context).size.height * 0.25,
+                    ),
                   ),
                 ),
               ],
@@ -327,13 +331,13 @@ class _LoginScreenState extends State<LoginScreen> {
       child: TextField(
         controller: controller,
         style: GoogleFonts.dmSans(
-          fontSize: 18,
+          fontSize: 15 * MediaQuery.of(context).textScaleFactor,
           color: Colors.black.withOpacity(0.6),
         ),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: GoogleFonts.dmSans(
-            fontSize: 18,
+             fontSize: 15 * MediaQuery.of(context).textScaleFactor,
             color: Colors.black.withOpacity(0.6),
             letterSpacing: -0.2,
           ),
@@ -356,13 +360,13 @@ class _LoginScreenState extends State<LoginScreen> {
         controller: controller,
         obscureText: _obscurePassword,
         style: GoogleFonts.dmSans(
-          fontSize: 16,
+          fontSize: 15 * MediaQuery.of(context).textScaleFactor,
           color: Colors.black.withOpacity(0.6),
         ),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: GoogleFonts.dmSans(
-            fontSize: 16,
+            fontSize: 15 * MediaQuery.of(context).textScaleFactor,
             color: Colors.black.withOpacity(0.6),
           ),
           suffixIcon: IconButton(

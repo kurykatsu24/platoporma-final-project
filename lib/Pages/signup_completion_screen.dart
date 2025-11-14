@@ -71,91 +71,98 @@ class _SignUpCompletionScreenState extends State<SignUpCompletionScreen>
                 // Logo
                 Image.asset(
                   'assets/images/platoporma_logo_whitebg1.png',
-                  width: 185,
-                  height: 185,
+                  width: MediaQuery.of(context).size.width * 0.38
                 ),
-                const SizedBox(height: 15),
+                const SizedBox(height: 5),
 
                 // Reused Title Container from onboarding
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 23),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFCCEDD8),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/images/fork_icon.png',
-                        width: 80,
-                        height: 80,
-                      ),
-                      const SizedBox(width: 2),
-                      Column(
-                        children: [
-                          Transform.translate(
-                            offset: const Offset(0, 10),
-                            child: Text(
-                              'Welcome to',
-                              style: GoogleFonts.poppins(
-                                fontSize: 30,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF27453E),
-                                letterSpacing: -1.5,
-                              ),
-                            ),
+                Transform.translate(
+                      offset: const Offset(0, 8),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFCCEDD8),
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          Transform.translate(
-                            offset: const Offset(0, -6),
-                            child: RichText(
-                              text: TextSpan(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Transform.translate(
+                                offset: const Offset(13, 0),
+                                child: Image.asset(
+                                  'assets/images/fork_icon.png',
+                                  width: 65,
+                                  height: 65,
+                                ),
+                              ),
+                              Column(
                                 children: [
-                                  TextSpan(
-                                    text: 'Plato',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 45,
-                                      fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF27453E),
-                                      letterSpacing: -2,
+                                  Transform.translate(
+                                    offset: const Offset(0, 12),
+                                    child: Text(
+                                      'Welcome to',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF27453E),
+                                        letterSpacing: -1.5,
+                                      ),
                                     ),
                                   ),
-                                  TextSpan(
-                                    text: 'Porma',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 45,
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FontStyle.italic,
-                                      color: const Color(0xFF27453E),
-                                      letterSpacing: -2,
+                                  Transform.translate(
+                                    offset: const Offset(0, -5),
+                                    child: RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: 'Plato',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 38,
+                                              fontWeight: FontWeight.bold,
+                                              color: const Color(0xFF27453E),
+                                              letterSpacing: -2,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: 'Porma',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 38,
+                                              fontStyle: FontStyle.italic,
+                                              fontWeight: FontWeight.bold,
+                                              color: const Color(0xFF27453E),
+                                              letterSpacing: -2,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
+                              Transform.translate(
+                                offset: const Offset(-13, 0),
+                                child: Image.asset(
+                                  'assets/images/spoon_icon.png',
+                                  width: 65,
+                                  height: 65,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                      const SizedBox(width: 2),
-                      Image.asset(
-                        'assets/images/spoon_icon.png',
-                        width: 80,
-                        height: 80,
-                      ),
-                    ],
-                  ),
-                ),
+                    ),
 
-                const SizedBox(height: 60),
+                const SizedBox(height: 40),
 
                 // -------------- Animated area ----------------
                 Stack(
                   clipBehavior: Clip.none,
                   alignment: Alignment.center,
                   children: [
-                    // BOXES (slide out left)
+                    //Boxes (slide out left)
                     FadeTransition(
                       opacity: _boxesFade,
                       child: SlideTransition(
@@ -171,8 +178,7 @@ class _SignUpCompletionScreenState extends State<SignUpCompletionScreen>
                         top: -450, // move freely up/down
                         right: -100, // move freely left/right
                         child: Opacity(
-                          opacity:
-                              0.65, // 👈 control transparency (0 = invisible, 1 = solid)
+                          opacity: 0.65, //control transparency (0 = invisible, 1 = solid)
                           child: Transform(
                             alignment: Alignment.center,
                             transform: Matrix4.identity()
@@ -221,7 +227,7 @@ class _SignUpCompletionScreenState extends State<SignUpCompletionScreen>
                   ],
                 ),
 
-                const SizedBox(height: 80),
+                const SizedBox(height: 40),
 
                 // Button
                 ElevatedButton(
@@ -256,7 +262,7 @@ class _SignUpCompletionScreenState extends State<SignUpCompletionScreen>
                     backgroundColor: const Color(0xFFEE795C),
                     overlayColor: const Color.fromARGB(255, 218, 101, 71)
                         .withOpacity(0.15), // 👈 soft touch-down color
-                    fixedSize: const Size(300, 60),
+                    fixedSize: const Size(300, 48),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
                     ),
@@ -264,16 +270,13 @@ class _SignUpCompletionScreenState extends State<SignUpCompletionScreen>
                   child: Text(
                     _showCompletionText ? 'Proceed to Homepage' : 'Next',
                     style: GoogleFonts.poppins(
-                      fontSize: 18,
+                      fontSize: 14 * MediaQuery.of(context).textScaleFactor,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                       letterSpacing: -0.2,
                     ),
                   ),
                 ),
-
-
-                const SizedBox(height: 35),
               ],
             ),
           ),
@@ -306,10 +309,10 @@ class _SignUpCompletionScreenState extends State<SignUpCompletionScreen>
       children: features
           .map(
             (feature) => Container(
-              width: 400,
-              height: 110,
+              width: MediaQuery.of(context).size.width * 0.80,
+              height: MediaQuery.of(context).size.height * 0.11,
               margin: const EdgeInsets.symmetric(vertical: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
                 border: Border.all(color: const Color(0xFFCCEDD8), width: 4),
@@ -321,10 +324,11 @@ class _SignUpCompletionScreenState extends State<SignUpCompletionScreen>
                   Positioned(
                     top: -20,
                     left: -24,
-                    child: Image.asset(feature['icon']!, width: 70, height: 70),
+                    child: Image.asset(feature['icon']!,
+                    width: MediaQuery.of(context).size.width * 0.13),
                   ),
                   Positioned.fill(
-                    left: 70,
+                    left: 50,
                     right: 15,
                     child: Align(
                       alignment: Alignment.centerLeft,
@@ -332,7 +336,7 @@ class _SignUpCompletionScreenState extends State<SignUpCompletionScreen>
                       child: Text(
                         feature['text']!,
                         style: GoogleFonts.dmSans(
-                          fontSize: 20,
+                          fontSize: 17 * MediaQuery.of(context).textScaleFactor,
                           fontWeight: FontWeight.w500,
                           color: const Color(0xFF27453E),
                           letterSpacing: -1,
@@ -357,7 +361,7 @@ class _SignUpCompletionScreenState extends State<SignUpCompletionScreen>
           "You're all set!",
           textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
-            fontSize: 57,
+            fontSize: 50 * MediaQuery.of(context).textScaleFactor,
             fontWeight: FontWeight.bold,
             letterSpacing: -3,
             color: const Color(0xFF27453E),
@@ -368,7 +372,7 @@ class _SignUpCompletionScreenState extends State<SignUpCompletionScreen>
           "Proceed to homepage, and let’s prepare meal\nrecipes tailored to your liking!",
           textAlign: TextAlign.center,
           style: GoogleFonts.dmSans(
-            fontSize: 19,
+            fontSize: 16 * MediaQuery.of(context).textScaleFactor,
             fontStyle: FontStyle.italic,
             fontWeight: FontWeight.w500,
             color: const Color(0xFF27453E),
