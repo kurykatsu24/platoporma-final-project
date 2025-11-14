@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:platoporma/Pages/signup_screen.dart';
+import 'package:platoporma/Pages/splash_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Platoporma',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: SignUpScreen(), //this is where the app starts
+      home: SplashScreen(), //this is where the app starts
     );
   } 
 }
