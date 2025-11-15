@@ -58,9 +58,9 @@ class _AnimatedNavBarState extends State<AnimatedNavBar>
   Widget build(BuildContext context) {
     return SafeArea(
       child: Container(
-        height: 100,
+        height: 85,
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 1),
         decoration: BoxDecoration(
           color: bgColor,
           boxShadow: [
@@ -95,7 +95,7 @@ class _AnimatedNavBarState extends State<AnimatedNavBar>
                   children: [
                     //widget para kaswitch between active and inactive icons with an animation and also wrap it in color filter (white)
                     AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
+                      duration: const Duration(milliseconds: 700),
                       child: ColorFiltered(
                         key: ValueKey<bool>(isActive),
                         colorFilter: isActive
@@ -103,8 +103,8 @@ class _AnimatedNavBarState extends State<AnimatedNavBar>
                             : const ColorFilter.mode(Colors.black, BlendMode.srcIn),
                         child: Image.asset(
                           isActive ? item['icon_active']! : item['icon_inactive']!,
-                          width: isActive ? 26 : 24,
-                          height: isActive ? 26 : 24,
+                          width: isActive ? 20 : 20,
+                          height: isActive ? 20 : 20,
                         ),
                       ),
                     ),
@@ -116,11 +116,11 @@ class _AnimatedNavBarState extends State<AnimatedNavBar>
                         duration: const Duration(milliseconds: 250),
                         opacity: isActive ? 1 : 0,
                         child: Padding(
-                          padding: const EdgeInsets.only(left: 6),
+                          padding: const EdgeInsets.only(left: 13),
                           child: Text(
                             item['label']!,
                             style: GoogleFonts.poppins(
-                              fontSize: 16,
+                              fontSize: 15 * MediaQuery.of(context).textScaleFactor,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),
