@@ -1,6 +1,9 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:platoporma/Widgets/recipe_card.dart';
 
 class HomePageSection extends StatefulWidget {
   const HomePageSection({super.key});
@@ -51,7 +54,7 @@ class _HomePageSectionState extends State<HomePageSection> {
             floating: false,
             backgroundColor: const Color(0xFFCCEDD8),
             elevation: 0,
-            expandedHeight: 150,
+            expandedHeight: 135,
 
             // Rounded bottom corners
             shape: const RoundedRectangleBorder(
@@ -89,7 +92,7 @@ class _HomePageSectionState extends State<HomePageSection> {
                             // Logo
                             Image.asset(
                               'assets/images/platoporma_logo_whitebg2.png',
-                              width: 85,
+                              width: 80,
                             ),
 
                             SizedBox(width: screenWidth * 0.03),
@@ -126,13 +129,13 @@ class _HomePageSectionState extends State<HomePageSection> {
                                   ),
 
                                   Text(
-                                    "Let’s find something delicious and comforting today.",
+                                    "Let’s find something delicious and comforting today",
                                     style: GoogleFonts.poppins(
                                       color: const Color(0xFF27453E),
                                       fontSize: 11,
                                       fontStyle: FontStyle.italic,
                                       fontWeight: FontWeight.w500,
-                                      letterSpacing: -1,
+                                      letterSpacing: -0.9,
                                     ),
                                     softWrap: true,
                                     maxLines: null,
@@ -158,24 +161,48 @@ class _HomePageSectionState extends State<HomePageSection> {
           ),
 
           // ------------------ BODY ------------------
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Container(
-                    height: 120,
-                    color: Colors.green[200],
-                    child: Center(
-                      child: Text(
-                        "Test card #$index",
-                        style: const TextStyle(fontSize: 20),
-                      ),
+          SliverToBoxAdapter(
+            child: FutureBuilder<List<RecipeCard>>(
+              future: fetchRecipes(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 50),
+                      child: CircularProgressIndicator(),
                     ),
-                  ),
-                );
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 50),
+                      child: Text('Error: ${snapshot.error}'),
+                    ),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 50),
+                      child: Text('No recipes found'),
+                    ),
+                  );
+                } else {
+                  final recipes = snapshot.data!;
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 10, right: 10, bottom: 15),
+                    child: MasonryGridView.count(
+                      padding: EdgeInsets.only(top: 0),
+                      physics: const NeverScrollableScrollPhysics(), // important: disables internal scroll
+                      shrinkWrap: true, // important: allows it to fit inside scroll view
+                      crossAxisCount: 2,           // 2 columns
+                      mainAxisSpacing: 5,         // vertical gap
+                      crossAxisSpacing: 5,        // horizontal gap
+                      itemCount: recipes.length,
+                      itemBuilder: (context, index) => recipes[index],
+                    ),
+                  );
+                }
               },
-              childCount: 12,
             ),
           ),
         ],
@@ -187,27 +214,86 @@ class _HomePageSectionState extends State<HomePageSection> {
 class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(
+          sigmaX: 10,
+          sigmaY: 10,
+        ),
+
+        child: Container(
+          width: double.infinity,
+          height: maxExtent,
+          color: const Color(0xFFFDFFEC).withOpacity(0.75),
+        
+          child: Padding(
+            padding: const EdgeInsets.only(left: 25, right: 25, top: 25, bottom: 5),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ---------- Title ----------
+                Text(
+                  "Explore Recipes",
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 32,
+                    color: const Color(0xFF27453E),
+                    letterSpacing: -2.3,
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // ---------- Horizontal Pills ----------
+                SizedBox(
+                  height: 33, // height of the pills container
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      _buildCategoryPill("Budget-Friendly"),
+                      _buildCategoryPill("Healthy"),
+                      _buildCategoryPill("Limited Ingredients"),
+                      _buildCategoryPill("Quick & Easy"),
+                      _buildCategoryPill("Comfort Food"),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ---------- Creates an inactive pill ----------
+  Widget _buildCategoryPill(String label) {
     return Container(
-      width: double.infinity,
-      height: 50,
-      color: Colors.blue, // test rectangle
-      child: const Center(
-        child: Text(
-          "Sticky Blue Bar",
-          style: TextStyle(color: Colors.white, fontSize: 16),
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE3E5D4), // light gray fill
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(color: const Color(0xFFE6E6E6)), // gray outline
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.dmSans(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: const Color(0xFF72736A),
+          letterSpacing: -0.5,
         ),
       ),
     );
   }
 
   @override
-  double get maxExtent => 50;
+  double get maxExtent => 130; // Increased to fit title + pills
 
   @override
-  double get minExtent => 50;
+  double get minExtent => 130; // Same for non-collapsing sticky header
 
   @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return false;
-  }
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
 }
