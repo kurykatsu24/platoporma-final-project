@@ -2,6 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:platoporma/Widgets/recipe_card.dart';
 
 class HomePageSection extends StatefulWidget {
   const HomePageSection({super.key});
@@ -159,24 +161,48 @@ class _HomePageSectionState extends State<HomePageSection> {
           ),
 
           // ------------------ BODY ------------------
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Container(
-                    height: 120,
-                    color: Colors.green[200],
-                    child: Center(
-                      child: Text(
-                        "Test card #$index",
-                        style: const TextStyle(fontSize: 20),
-                      ),
+          SliverToBoxAdapter(
+            child: FutureBuilder<List<RecipeCard>>(
+              future: fetchRecipes(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 50),
+                      child: CircularProgressIndicator(),
                     ),
-                  ),
-                );
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 50),
+                      child: Text('Error: ${snapshot.error}'),
+                    ),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 50),
+                      child: Text('No recipes found'),
+                    ),
+                  );
+                } else {
+                  final recipes = snapshot.data!;
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 10, right: 10, bottom: 15),
+                    child: MasonryGridView.count(
+                      padding: EdgeInsets.only(top: 0),
+                      physics: const NeverScrollableScrollPhysics(), // important: disables internal scroll
+                      shrinkWrap: true, // important: allows it to fit inside scroll view
+                      crossAxisCount: 2,           // 2 columns
+                      mainAxisSpacing: 5,         // vertical gap
+                      crossAxisSpacing: 5,        // horizontal gap
+                      itemCount: recipes.length,
+                      itemBuilder: (context, index) => recipes[index],
+                    ),
+                  );
+                }
               },
-              childCount: 12,
             ),
           ),
         ],
@@ -263,10 +289,10 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  double get maxExtent => 120; // Increased to fit title + pills
+  double get maxExtent => 130; // Increased to fit title + pills
 
   @override
-  double get minExtent => 120; // Same for non-collapsing sticky header
+  double get minExtent => 130; // Same for non-collapsing sticky header
 
   @override
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
