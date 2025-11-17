@@ -224,7 +224,7 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
         child: Container(
           width: double.infinity,
           height: maxExtent,
-          color: const Color(0xFFFDFFEC).withOpacity(0.75),
+          color: const Color(0xFFFDFFEC).withOpacity(0.85),
         
           child: Padding(
             padding: const EdgeInsets.only(left: 25, right: 25, top: 25, bottom: 5),
