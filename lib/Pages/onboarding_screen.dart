@@ -153,28 +153,20 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                       text: TextSpan(
                                         children: [
                                           TextSpan(
-                                            text: 'Plato',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 38,
-                                              fontWeight: FontWeight.bold,
-                                              color: const Color(0xFF27453E),
-                                              letterSpacing: -2,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: 'Porma',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 38,
-                                              fontStyle: FontStyle.italic,
-                                              fontWeight: FontWeight.bold,
-                                              color: const Color(0xFF27453E),
-                                              letterSpacing: -2,
+                                            text: 'PlatoPorma', // combined
+                                            style: const TextStyle(
+                                              fontFamily: 'NiceHoney',
+                                              fontSize: 50,
+                                              fontWeight: FontWeight.w100,
+                                              color: Color(0xFF27453E),
+                                              letterSpacing: 3,
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
                                   ),
+
                                 ],
                               ),
                               Transform.translate(
