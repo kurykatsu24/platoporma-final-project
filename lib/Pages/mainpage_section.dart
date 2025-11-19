@@ -18,8 +18,8 @@ class _MainPageSectionState extends State<MainPageSection> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = const [
-    SearchSection(),
     HomePageSection(),
+    SearchSection(),
     SavedSection(),
     ProfileSection(),
   ];
