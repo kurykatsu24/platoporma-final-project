@@ -1,10 +1,18 @@
+// lib/Sections/search_section.dart
 import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/recipe_prediction.dart';
-import '../services/search_service.dart';
+import '../services/recipe_search_service.dart';
 import '../Widgets/recipe_prediction_box.dart';
+
+// INGREDIENT: new imports
+import '../models/ingredient_prediction.dart';
+import '../models/ingredient_pill.dart';
+import '../services/ingredient_search_service.dart';
+import '../Widgets/ingredient_prediction_box.dart';
+import '../Widgets/ingredient_pill_widget.dart';
 
 class SearchSection extends StatefulWidget {
   const SearchSection({super.key});
@@ -27,6 +35,15 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
   
   late final RecipeSearchService _searchService;
 
+  // INGREDIENT: ingredient prediction state
+  List<IngredientPrediction> _ingredientPredictions = [];
+  bool _isFetchingIngredientPrediction = false;
+  Timer? _ingredientDebounce;
+  late final IngredientSearchService _ingredientSearchService;
+
+  // selected pills
+  List<IngredientPill> _selectedIngredients = [];
+
   // controls visual state:
   bool _filterVisible = true; // controls filter box opacity+slide
   bool _slideSearch = false; // when true -> search box slides left into filter space
@@ -43,10 +60,13 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
   final Duration animDuration = const Duration(milliseconds: 220);
   final Duration slideDelay = const Duration(milliseconds: 50);
 
+  final ScrollController _pillScrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     _searchService = RecipeSearchService(client: Supabase.instance.client);
+    _ingredientSearchService = IngredientSearchService(client: Supabase.instance.client);
     _animController = AnimationController(vsync: this, duration: animDuration);
 
     // Keep logic centralized in focus listener (start/stop animations in order)
@@ -63,9 +83,15 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
   void dispose() {
     _animController.dispose();
     _controller.dispose();
-    _focusNode.dispose();
+    _focus_node_dispose_helper(); // tiny helper to keep comments unchanged above
     _debounce?.cancel();
+    _ingredientDebounce?.cancel();
     super.dispose();
+  }
+
+  // tiny helper so we don't change your existing comments/structure — calls focusNode dispose
+  void _focus_node_dispose_helper() {
+    _focusNode.dispose();
   }
 
   // Colors from spec
@@ -116,6 +142,66 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
   double _filterBoxSize(double screenW) {
     final containerWidth = (screenW - 32) * 0.15; // 16px horizontal padding both sides
     return containerWidth.clamp(56.0, 92.0);
+  }
+
+  // ---------------- INGREDIENT: helper to add pill ----------------
+  void _addIngredientPillFromPrediction(IngredientPrediction p) {
+    // prevent duplicates
+    if (_selectedIngredients.any((x) => x.id == p.id)) return;
+    setState(() {
+      _selectedIngredients.add(IngredientPill(id: p.id, name: p.name, category: p.category));
+      // wait for next frame then scroll
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_pillScrollController.hasClients) {
+          _pillScrollController.animateTo(
+            _pillScrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+
+      _ingredientPredictions = [];
+      _controller.clear();
+      _isFetchingIngredientPrediction = false;
+      // After adding ingredient, unfocus or keep focus depending on UX:
+      // keep focus so user can add another — but we want search button now
+      _focusNode.requestFocus();
+    });
+  }
+
+  // ---------------- INGREDIENT: remove pill (double-tap)
+  void _removePill(IngredientPill pill) {
+    setState(() {
+      _selectedIngredients.removeWhere((p) => p.id == pill.id);
+    });
+  }
+
+  // ---------------- INGREDIENT: fetch predictions (debounced)
+  void _scheduleIngredientFetch(String value) {
+    _ingredientDebounce?.cancel();
+    _ingredientDebounce = Timer(const Duration(milliseconds: 300), () async {
+      final q = value.trim();
+      if (q.isEmpty) {
+        setState(() {
+          _ingredientPredictions = [];
+          _isFetchingIngredientPrediction = false;
+        });
+        return;
+      }
+
+      setState(() => _isFetchingIngredientPrediction = true);
+
+      final results = await _ingredientSearchService.fetchPredictions(q);
+
+      // remove already selected
+      final filtered = results.where((r) => !_selectedIngredients.any((s) => s.id == r.id)).toList();
+
+      setState(() {
+        _ingredientPredictions = filtered;
+        _isFetchingIngredientPrediction = false;
+      });
+    });
   }
 
   @override
@@ -301,7 +387,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
                                               }
                                             },
                                             child: Text(
-                                              _controller.text.isEmpty ? 'Cancel' : 'Search',
+                                              _shouldShowSearchButton ? 'Search' : 'Cancel',
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                               style: GoogleFonts.dmSans(
@@ -350,6 +436,23 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
                                 },
                               ),
                             ),
+
+                          // --- INGREDIENT prediction box (floating) - shown when ingredient filter active
+                          if (_isSearching && _controller.text.trim().isNotEmpty && _activeFilter == FilterType.ingredient)
+                            Align(
+                              alignment: Alignment.topLeft,
+                              child: IngredientPredictionBox(
+                                items: _ingredientPredictions,
+                                query: _controller.text.trim(),
+                                width: MediaQuery.of(context).size.width - 30,
+                               
+                                topOffset: 0,
+                                onTap: (p) {
+                                  _addIngredientPillFromPrediction(p);
+                                },
+                              ),
+                            ),
+
 
                           // Dropdown floating box (positioned below filter). We'll render in column so it flows.
                           // Show it with Align left near filter box.
@@ -516,7 +619,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
   final placeholder = _activeFilter == FilterType.none
       ? 'Select a filter type first to begin'
       : (_activeFilter == FilterType.ingredient
-          ? 'Enter Ingredients'
+          ? (_selectedIngredients.isEmpty ? 'Enter Ingredients' : 'Add another ingredient?')
           : 'Search for Recipes');
 
   final enabled = _activeFilter != FilterType.none;
@@ -540,14 +643,14 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
           // Search icon + text field area
           Expanded(
             child: Padding(
-              padding: EdgeInsets.only(left: 16, right: 16),
+              padding: EdgeInsets.only(left: 13.5, right: 16),
               child: Row(
                 children: [
                   // search icon
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 100),
                     width: _isSearching ? 0 : 18,   // icon collapses
-                    margin: EdgeInsets.only(right: _isSearching ? 0 : 10),
+                    margin: EdgeInsets.only(right: _isSearching ? 0 : 6),
                     child: AnimatedOpacity(
                       duration: const Duration(milliseconds: 200),
                       opacity: _isSearching ? 0.0 : 1.0,
@@ -561,85 +664,182 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
                     ),
                   ),
 
-                  // TextField
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        if (!enabled) return; // ignore taps if disabled
-                        // Request focus (this will trigger the focus listener that coordinates the animations)
-                        _focusNode.requestFocus();
-                        setState(() {
-                          _dropdownVisible = false;
-                        });
-                      },
-                      child: AbsorbPointer(
-                        absorbing: false, // allow typing
-                        child: TextField(
-                          controller: _controller,
-                          focusNode: _focusNode,
-                          enabled: enabled,
-                          style: GoogleFonts.dmSans(
-                            fontSize: 15,
-                            color: enabled ? const Color(0xFF333333) : Colors.grey,
-                          ),
-                          decoration: InputDecoration(
-                            isDense: true,
-                            border: InputBorder.none,
-                            hintText: placeholder,
-                            hintStyle: GoogleFonts.dmSans(
-                              fontSize: 15,
-                              color: enabled ? Colors.grey.shade500 : Colors.grey.shade400,
-                              letterSpacing: -0.2,
-                            ),
-                          ),
-                          onChanged: (value) {
-                            setState(() {}); // keeps your UI toggles working
+                  // ---------------- INGREDIENT MODE: pills + input ----------------
+                  if (_activeFilter == FilterType.ingredient)
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: constraints.maxWidth),
+                            child: Row(
+                              children: [
+                                // Pills area (scrollable)
+                                Flexible(
+                                  child: SingleChildScrollView(
+                                    controller: _pillScrollController,
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: [
+                                        ..._selectedIngredients.map((pill) =>
+                                          IngredientPillWidget(
+                                            pill: pill,
+                                            onDoubleTap: (p) => _removePill(p),
+                                          )
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
 
-                            // debounce fetch predictions
-                            _debounce?.cancel();
-                            _debounce = Timer(const Duration(milliseconds: 300), () async {
-                              if (value.trim().isEmpty || _activeFilter == FilterType.none) {
+                                const SizedBox(width: 6),
+
+                                // TextField takes ONLY the remaining space
+                                Flexible(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      if (!enabled) return;
+                                      _focusNode.requestFocus();
+                                      setState(() { _dropdownVisible = false; });
+                                    },
+                                    child: AbsorbPointer(
+                                      absorbing: false,
+                                      child: ConstrainedBox(
+                                        constraints: BoxConstraints(
+                                          minWidth: 80, // enough for placeholder
+                                          maxWidth: constraints.maxWidth, // expands until pills need space
+                                        ),
+                                        child: TextField(
+                                          controller: _controller,
+                                          focusNode: _focusNode,
+                                          enabled: enabled,
+                                          style: GoogleFonts.dmSans(
+                                            fontSize: 15,
+                                            color: enabled ? Color(0xFF333333) : Colors.grey,
+                                          ),
+                                          decoration: InputDecoration(
+                                            isDense: true,
+                                            border: InputBorder.none,
+                                            hintText: placeholder,
+                                            hintStyle: GoogleFonts.dmSans(
+                                              fontSize: 15,
+                                              color: enabled ? Colors.grey.shade500 : Colors.grey.shade400,
+                                              letterSpacing: -0.2,
+                                            ),
+                                          ),
+                                          onChanged: (value) {
+                                            setState(() {});
+                                            if (value.trim().isEmpty) {
+                                              setState(() {
+                                                _ingredientPredictions = [];
+                                                _isFetchingIngredientPrediction = false;
+                                              });
+                                            } else {
+                                              _scheduleIngredientFetch(value);
+                                            }
+                                          },
+                                          onSubmitted: (_) => _focusNode.unfocus(),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  else
+                    // ---------------- RECIPE MODE: original text field ----------------
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          if (!enabled) return; // ignore taps if disabled
+                          // Request focus (this will trigger the focus listener that coordinates the animations)
+                          _focusNode.requestFocus();
+                          setState(() {
+                            _dropdownVisible = false;
+                          });
+                        },
+                        child: AbsorbPointer(
+                          absorbing: false, // allow typing
+                          child: TextField(
+                            controller: _controller,
+                            focusNode: _focusNode,
+                            enabled: enabled,
+                            style: GoogleFonts.dmSans(
+                              fontSize: 15,
+                              color: enabled ? const Color(0xFF333333) : Colors.grey,
+                            ),
+                            decoration: InputDecoration(
+                              isDense: true,
+                              border: InputBorder.none,
+                              hintText: placeholder,
+                              hintStyle: GoogleFonts.dmSans(
+                                fontSize: 15,
+                                color: enabled ? Colors.grey.shade500 : Colors.grey.shade400,
+                                letterSpacing: -0.2,
+                              ),
+                            ),
+                            onChanged: (value) {
+                              setState(() {}); // keeps your UI toggles working
+
+                              // debounce fetch predictions
+                              _debounce?.cancel();
+                              _debounce = Timer(const Duration(milliseconds: 300), () async {
+                                if (value.trim().isEmpty || _activeFilter == FilterType.none) {
+                                  setState(() {
+                                    _predictions = [];
+                                    _isFetchingPrediction = false;
+                                  });
+                                  return;
+                                }
+
+                                setState(() => _isFetchingPrediction = true);
+
+                                final results = await _search_service_fetch_helper(value.trim());
                                 setState(() {
-                                  _predictions = [];
+                                  _predictions = results;
                                   _isFetchingPrediction = false;
                                 });
-                                return;
-                              }
-
-                              setState(() => _isFetchingPrediction = true);
-
-                              final results = await _searchService.fetchPredictions(value.trim());
-                              setState(() {
-                                _predictions = results;
-                                _isFetchingPrediction = false;
                               });
-                            });
-                          },
-                          onSubmitted: (v) {
-                            // For now we simply unfocus; actual search logic goes here
-                            _focusNode.unfocus();
-                          },
+                            },
+                            onSubmitted: (v) {
+                              // For now we simply unfocus; actual search logic goes here
+                              _focusNode.unfocus();
+                            },
+                          ),
                         ),
                       ),
                     ),
-                  ),
 
                   // show a small spinner while fetching predictions so the field is read
-                  if (_isFetchingPrediction)
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.centerRight,
+                  if (_activeFilter == FilterType.recipe && _isFetchingPrediction)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16),
                       child: SizedBox(
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
-                          strokeWidth: 2.0,
+                          strokeWidth: 2,
                           valueColor: AlwaysStoppedAnimation(Color(0xFFEE795C)),
                         ),
                       ),
                     ),
+
+                  if (_activeFilter == FilterType.ingredient && _isFetchingIngredientPrediction)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation(Color(0xFFEE795C)),
+                        ),
+                      ),
+                      
                   ),
-                
                 ],
               ),
             ),
@@ -651,4 +851,22 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
       ),
     );
   }
+
+  // helper to keep original search service calls abstracted
+  Future<List<RecipePrediction>> _search_service_fetch_helper(String q) async {
+    return await _searchService.fetchPredictions(q);
+  }
+  
+  bool get _shouldShowSearchButton {
+  if (_activeFilter == FilterType.recipe) {
+    return _controller.text.trim().isNotEmpty;
+  }
+
+  if (_activeFilter == FilterType.ingredient) {
+    return _selectedIngredients.isNotEmpty;
+  }
+
+  return false;
 }
+}
+
