@@ -157,7 +157,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                             style: const TextStyle(
                                               fontFamily: 'NiceHoney',
                                               fontSize: 50,
-                                              fontWeight: FontWeight.w100,
+                                              fontWeight: FontWeight.bold,
                                               color: Color(0xFF27453E),
                                               letterSpacing: 3,
                                             ),
