@@ -1,6 +1,10 @@
-// lib/Sections/search_section.dart
+import 'dart:async';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../models/recipe_prediction.dart';
+import '../services/search_service.dart';
+import '../Widgets/recipe_prediction_box.dart';
 
 class SearchSection extends StatefulWidget {
   const SearchSection({super.key});
@@ -16,6 +20,13 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
   FilterType _activeFilter = FilterType.none; // initialized to recipe per your request
   bool _dropdownVisible = false;
 
+  // predictions state
+  List<RecipePrediction> _predictions = [];
+  bool _isFetchingPrediction = false;
+  Timer? _debounce;
+  
+  late final RecipeSearchService _searchService;
+
   // controls visual state:
   bool _filterVisible = true; // controls filter box opacity+slide
   bool _slideSearch = false; // when true -> search box slides left into filter space
@@ -27,6 +38,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
   // Animation controller for subtle animations (optional)
   late final AnimationController _animController;
 
+
   // tweak durations/delays here
   final Duration animDuration = const Duration(milliseconds: 220);
   final Duration slideDelay = const Duration(milliseconds: 50);
@@ -34,6 +46,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
+    _searchService = RecipeSearchService(client: Supabase.instance.client);
     _animController = AnimationController(vsync: this, duration: animDuration);
 
     // Keep logic centralized in focus listener (start/stop animations in order)
@@ -51,6 +64,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
     _animController.dispose();
     _controller.dispose();
     _focusNode.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -207,7 +221,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
                   // ---------- Search Row (Filter + Search) as pinned header-ish
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
                       child: Column(
                         children: [
                           // Row container with shadow (height 60)
@@ -306,6 +320,36 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
                               ],
                             ),
                           ),
+
+
+                          // --- Prediction box (floating style)
+                          if (_isSearching && _controller.text.trim().isNotEmpty && _activeFilter == FilterType.recipe)
+                            Align(
+                              alignment: Alignment.topLeft,
+                              child: RecipePredictionBox(
+                                items: _predictions,
+                                query: _controller.text.trim(),
+                                width: MediaQuery.of(context).size.width - 30, // matches 15 padding each side
+                               
+                                topOffset: 0,
+                                onTap: (p) {
+                                  // When a prediction is tapped:
+                                  if (p.itemType == 'recipe' && p.refId != null) {
+                                    // fill the search box with the recipe name and perform search (or navigate)
+                                    _controller.text = p.displayText;
+                                    _focusNode.unfocus();
+                                    // TODO: call your search results navigation or selection logic here
+                                    debugPrint('Selected recipe: ${p.displayText} id=${p.refId}');
+                                  } else if (p.itemType == 'category') {
+                                    // user tapped a category suggestion
+                                    _controller.text = p.displayText;
+                                    _focusNode.unfocus();
+                                    // TODO: handle category triggered search (filter by cuisine/diet/protein)
+                                    debugPrint('Selected category: ${p.displayText} type=${p.categoryType}');
+                                  }
+                                },
+                              ),
+                            ),
 
                           // Dropdown floating box (positioned below filter). We'll render in column so it flows.
                           // Show it with Align left near filter box.
@@ -496,7 +540,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
           // Search icon + text field area
           Expanded(
             child: Padding(
-              padding: EdgeInsets.only(left: 16.0, right: rightPadding),
+              padding: EdgeInsets.only(left: 16, right: 16),
               child: Row(
                 children: [
                   // search icon
@@ -548,9 +592,27 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
                               letterSpacing: -0.2,
                             ),
                           ),
-                          onChanged: (v) {
-                            setState(() {
-                              // this toggles Cancel -> Search text (text shown on outside button)
+                          onChanged: (value) {
+                            setState(() {}); // keeps your UI toggles working
+
+                            // debounce fetch predictions
+                            _debounce?.cancel();
+                            _debounce = Timer(const Duration(milliseconds: 300), () async {
+                              if (value.trim().isEmpty || _activeFilter == FilterType.none) {
+                                setState(() {
+                                  _predictions = [];
+                                  _isFetchingPrediction = false;
+                                });
+                                return;
+                              }
+
+                              setState(() => _isFetchingPrediction = true);
+
+                              final results = await _searchService.fetchPredictions(value.trim());
+                              setState(() {
+                                _predictions = results;
+                                _isFetchingPrediction = false;
+                              });
                             });
                           },
                           onSubmitted: (v) {
@@ -561,6 +623,23 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
                       ),
                     ),
                   ),
+
+                  // show a small spinner while fetching predictions so the field is read
+                  if (_isFetchingPrediction)
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.0,
+                          valueColor: AlwaysStoppedAnimation(Color(0xFFEE795C)),
+                        ),
+                      ),
+                    ),
+                  ),
+                
                 ],
               ),
             ),
