@@ -62,6 +62,12 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
 
   final ScrollController _pillScrollController = ScrollController();
 
+    // --- WATERMARK OVERLAY CONTROL ---
+  OverlayEntry? _watermarkOverlay;
+  double _watermarkScale = 1.3; // tweak at runtime if you like
+  Offset _watermarkOffset = const Offset(0, 45); // tweak X/Y (dx, dy) if you want translation
+  double _watermarkOpacity = 0.08; // watermark visibility
+
   @override
   void initState() {
     super.initState();
@@ -77,20 +83,27 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
         _onFocusLost();
       }
     });
+
+    // Insert watermark overlay after first frame (so Overlay.of(context) is available)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _insertWatermarkOverlay();
+    });
   }
 
   @override
   void dispose() {
+    _removeWatermarkOverlay();
     _animController.dispose();
     _controller.dispose();
-    _focus_node_dispose_helper(); // tiny helper to keep comments unchanged above
+    _disposeFocusNode(); // tiny helper to keep comments unchanged above
     _debounce?.cancel();
     _ingredientDebounce?.cancel();
     super.dispose();
   }
 
-  // tiny helper so we don't change your existing comments/structure — calls focusNode dispose
-  void _focus_node_dispose_helper() {
+  // ---------------- Disposal helpers ----------------
+  // Keep a small helper for focus node disposal to centralize cleanup.
+  void _disposeFocusNode() {
     _focusNode.dispose();
   }
 
@@ -218,7 +231,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
       backgroundColor: bgColor,
       body: Stack(
         fit: StackFit.expand,
-        children: [
+        children: [   
           // ---------- Content (AppBar + Search Row) ----------
           Positioned.fill(
             child: MediaQuery.removeViewInsets(
@@ -797,7 +810,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
 
                                 setState(() => _isFetchingPrediction = true);
 
-                                final results = await _search_service_fetch_helper(value.trim());
+                                final results = await _fetchRecipePredictions(value.trim());
                                 setState(() {
                                   _predictions = results;
                                   _isFetchingPrediction = false;
@@ -852,21 +865,65 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
     );
   }
 
-  // helper to keep original search service calls abstracted
-  Future<List<RecipePrediction>> _search_service_fetch_helper(String q) async {
+  // ---------------- Service helpers ----------------
+  // Wrapper for recipe search service calls
+  Future<List<RecipePrediction>> _fetchRecipePredictions(String q) async {
     return await _searchService.fetchPredictions(q);
   }
-  
-  bool get _shouldShowSearchButton {
-  if (_activeFilter == FilterType.recipe) {
-    return _controller.text.trim().isNotEmpty;
+    
+    bool get _shouldShowSearchButton {
+    if (_activeFilter == FilterType.recipe) {
+      return _controller.text.trim().isNotEmpty;
+    }
+
+    if (_activeFilter == FilterType.ingredient) {
+      return _selectedIngredients.isNotEmpty;
+    }
+
+    return false;
   }
 
-  if (_activeFilter == FilterType.ingredient) {
-    return _selectedIngredients.isNotEmpty;
+    void _insertWatermarkOverlay() {
+    // avoid double insert
+    if (_watermarkOverlay != null) return;
+
+    _watermarkOverlay = OverlayEntry(builder: (context) {
+      // OverlayEntry is above everything — not affected by keyboard layout changes.
+      return Positioned.fill(
+        child: IgnorePointer(
+          ignoring: true, // non-interactive so it doesn't block taps
+          child: Center(
+            child: Transform.translate(
+              offset: _watermarkOffset,
+              child: Transform.scale(
+                scale: _watermarkScale,
+                child: Opacity(
+                  opacity: _watermarkOpacity,
+                  child: Image.asset(
+                    'assets/images/platoporma_logo.png',
+                    // size by screen width, tweak the multiplier as needed
+                    width: MediaQuery.of(context).size.width * 0.55,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    });
+
+    final overlay = Overlay.of(context, rootOverlay: true);
+    if (_watermarkOverlay != null) {
+      overlay.insert(_watermarkOverlay!);
+    }
   }
 
-  return false;
-}
+  void _removeWatermarkOverlay() {
+    if (_watermarkOverlay != null) {
+      _watermarkOverlay!.remove();
+      _watermarkOverlay = null;
+    }
+  }
 }
 
