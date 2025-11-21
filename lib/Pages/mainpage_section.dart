@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import '../Widgets/animated_navbar.dart';
 import '../Pages/homepage_section.dart';
-import '../Pages/search_section.dart';
+import 'search_section.dart';
 import '../Pages/saved_section.dart';
 import '../Pages/profile_section.dart';
 

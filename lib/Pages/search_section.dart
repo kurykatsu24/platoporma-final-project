@@ -1,4 +1,3 @@
-// lib/Sections/search_section.dart
 import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +12,8 @@ import '../models/ingredient_pill.dart';
 import '../services/ingredient_search_service.dart';
 import '../Widgets/ingredient_prediction_box.dart';
 import '../Widgets/ingredient_pill_widget.dart';
+
+import 'package:platoporma/Pages/search_results_screen.dart';
 
 class SearchSection extends StatefulWidget {
   const SearchSection({super.key});
@@ -397,6 +398,11 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
                                                 final query = _controller.text.trim();
                                                 debugPrint("Searching for: $query");
                                                 _focusNode.unfocus();
+
+                                                _removeWatermarkOverlay();
+
+                                                _goToResults(_controller.text.trim());
+
                                               }
                                             },
                                             child: Text(
@@ -437,7 +443,11 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
                                     // fill the search box with the recipe name and perform search (or navigate)
                                     _controller.text = p.displayText;
                                     _focusNode.unfocus();
-                                    // TODO: call your search results navigation or selection logic here
+                                    
+                                    _removeWatermarkOverlay();
+
+                                    _goToResults(_controller.text.trim());
+
                                     debugPrint('Selected recipe: ${p.displayText} id=${p.refId}');
                                   } else if (p.itemType == 'category') {
                                     // user tapped a category suggestion
@@ -820,6 +830,13 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
                             onSubmitted: (v) {
                               // For now we simply unfocus; actual search logic goes here
                               _focusNode.unfocus();
+                              final q = v.trim();
+                              if (q.isNotEmpty) {
+
+                                _removeWatermarkOverlay();
+
+                                _goToResults(_controller.text.trim());
+                              }
                             },
                           ),
                         ),
@@ -924,6 +941,19 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
       _watermarkOverlay!.remove();
       _watermarkOverlay = null;
     }
+  }
+
+  //helper for Search button navigation
+  void _goToResults(String query) {
+    // Always remove watermark overlay before navigating
+    _removeWatermarkOverlay();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SearchResultsPage(query: query),
+      ),
+    );
   }
 }
 
