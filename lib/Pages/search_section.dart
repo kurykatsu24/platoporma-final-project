@@ -69,12 +69,14 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
   Offset _watermarkOffset = const Offset(0, 45); // tweak X/Y (dx, dy) if you want translation
   double _watermarkOpacity = 0.08; // watermark visibility
 
+
   @override
   void initState() {
     super.initState();
     _searchService = RecipeSearchService(client: Supabase.instance.client);
     _ingredientSearchService = IngredientSearchService(client: Supabase.instance.client);
     _animController = AnimationController(vsync: this, duration: animDuration);
+    
 
     // Keep logic centralized in focus listener (start/stop animations in order)
     _focusNode.addListener(() {
@@ -110,7 +112,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
 
   // Colors from spec
   static const Color bgColor = Color(0xFFFDFFEC);
-  static const Color appbarColor = Color(0xFFCCEDD8);
+  static const Color appbarColor = Color(0xFFC2EBD2);
   static const Color primaryText = Color(0xFF27453E);
 
   // CHANGED: inactive ellipse must be coral #E56A48 per your request
@@ -399,7 +401,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
                                               if (_activeFilter == FilterType.recipe) {
                                                 final recipeQuery = _controller.text.trim();
                                                 if (recipeQuery.isNotEmpty) {
-                                                  _goToResults(recipeQuery);
+                                                  _goToTextResults(recipeQuery);
                                                 }
                                                 return;
                                               }
@@ -412,12 +414,8 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
                                                 }
 
                                                 // Build query from selected ingredient pills
-                                                final ingredientQuery = _selectedIngredients
-                                                    .map((e) => e.name)        // or e.displayText based on your model
-                                                    .join(', ');
-
-                                                _goToResults(ingredientQuery);
-                                                return;
+                                                final ingredientList = _selectedIngredients.map((e) => e.name).toList();
+                                                _goToIngredientResults(ingredientList);
                                               }
                                             },
                                             child: Text(
@@ -459,14 +457,14 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
                                     _controller.text = p.displayText;
                                     _focusNode.unfocus();
                                     
-                                    _goToResults(_controller.text.trim());
+                                    _goToTextResults(_controller.text.trim());
 
                                     debugPrint('Selected recipe: ${p.displayText} id=${p.refId}');
                                   } else if (p.itemType == 'category') {
                                     // user tapped a category suggestion
                                     _controller.text = p.displayText;
                                     _focusNode.unfocus();
-                                    _goToResults(_controller.text.trim());
+                                    _goToTextResults(_controller.text.trim());
                                     debugPrint('Selected category: ${p.displayText} type=${p.categoryType}');
                                   }
                                 },
@@ -848,7 +846,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
 
                                 _removeWatermarkOverlay();
 
-                                _goToResults(_controller.text.trim());
+                                _goToTextResults(_controller.text.trim());
                               }
                             },
                           ),
@@ -957,14 +955,30 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
   }
 
   //helper for Search button navigation
-  void _goToResults(String query) {
-    // Always remove watermark overlay before navigating
+  // For normal recipe search (text-based)
+  void _goToTextResults(String query) {
     _removeWatermarkOverlay();
-
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => SearchResultsPage(query: query),
+        builder: (_) => SearchResultsPage(
+          textQuery: query,
+          ingredientList: null,
+        ),
+      ),
+    );
+  }
+
+  // For ingredient-based search (using pills)
+  void _goToIngredientResults(List<String> ingredients) {
+    _removeWatermarkOverlay();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SearchResultsPage(
+          textQuery: null,
+          ingredientList: ingredients,
+        ),
       ),
     );
   }
