@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:platoporma/Pages/mainpage_section.dart';
+import 'package:platoporma/Pages/search_results_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Platoporma',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: MainPageSection(), //this is where the app starts
+      home: SearchResultsPage(), //this is where the app starts
     );
   } 
 }
