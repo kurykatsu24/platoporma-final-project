@@ -95,14 +95,15 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
     _removeWatermarkOverlay();
     _animController.dispose();
     _controller.dispose();
-    _focus_node_dispose_helper(); // tiny helper to keep comments unchanged above
+    _disposeFocusNode(); // tiny helper to keep comments unchanged above
     _debounce?.cancel();
     _ingredientDebounce?.cancel();
     super.dispose();
   }
 
-  // tiny helper so we don't change your existing comments/structure — calls focusNode dispose
-  void _focus_node_dispose_helper() {
+  // ---------------- Disposal helpers ----------------
+  // Keep a small helper for focus node disposal to centralize cleanup.
+  void _disposeFocusNode() {
     _focusNode.dispose();
   }
 
@@ -809,7 +810,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
 
                                 setState(() => _isFetchingPrediction = true);
 
-                                final results = await _search_service_fetch_helper(value.trim());
+                                final results = await _fetchRecipePredictions(value.trim());
                                 setState(() {
                                   _predictions = results;
                                   _isFetchingPrediction = false;
@@ -864,10 +865,11 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
     );
   }
 
-  // helper to keep original search service calls abstracted
-  Future<List<RecipePrediction>> _search_service_fetch_helper(String q) async {
-      return await _searchService.fetchPredictions(q);
-    }
+  // ---------------- Service helpers ----------------
+  // Wrapper for recipe search service calls
+  Future<List<RecipePrediction>> _fetchRecipePredictions(String q) async {
+    return await _searchService.fetchPredictions(q);
+  }
     
     bool get _shouldShowSearchButton {
     if (_activeFilter == FilterType.recipe) {
@@ -923,6 +925,5 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
       _watermarkOverlay = null;
     }
   }
-
 }
 
