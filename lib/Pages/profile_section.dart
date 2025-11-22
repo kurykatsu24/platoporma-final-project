@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:platoporma/Pages/onboarding_screen.dart'; 
+import 'package:platoporma/pages/onboarding_screen.dart'; 
 
 class ProfileSection extends StatelessWidget {
   const ProfileSection({super.key});

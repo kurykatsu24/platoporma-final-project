@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:platoporma/Pages/onboarding_screen.dart';
-import 'package:platoporma/Pages/signup_screen.dart'; 
-import 'package:platoporma/Pages/login_completion_screen.dart';
-import 'package:platoporma/Auth/validators.dart';
-import 'package:platoporma/Auth/auth_service.dart';
+import 'package:platoporma/pages/onboarding_screen.dart';
+import 'package:platoporma/pages/signup_screen.dart'; 
+import 'package:platoporma/pages/login_completion_screen.dart';
+import 'package:platoporma/auth/validators.dart';
+import 'package:platoporma/auth/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:google_fonts/google_fonts.dart';
-import 'package:platoporma/Pages/signup_screen.dart';
-import 'package:platoporma/Pages/login_screen.dart';
+import 'package:platoporma/pages/signup_screen.dart';
+import 'package:platoporma/pages/login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:platoporma/Pages/onboarding_screen.dart';
-import 'package:platoporma/Pages/login_screen.dart';
-import 'package:platoporma/Pages/signup_completion_screen.dart';
-import 'package:platoporma/Auth/validators.dart';
-import 'package:platoporma/Auth/auth_service.dart';
+import 'package:platoporma/pages/onboarding_screen.dart';
+import 'package:platoporma/pages/login_screen.dart';
+import 'package:platoporma/pages/signup_completion_screen.dart';
+import 'package:platoporma/auth/validators.dart';
+import 'package:platoporma/auth/auth_service.dart';
 
 final supabase = Supabase.instance.client;
 

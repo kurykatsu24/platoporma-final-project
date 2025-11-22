@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
-import 'package:platoporma/Widgets/recipe_card.dart'; // your existing file
+import 'package:platoporma/widgets/recipe_card.dart'; 
 
 // Colors used in your app (kept consistent)
 const Color bgColor = Color(0xFFFDFFEC);
