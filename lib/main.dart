@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   //this ensures Flutter widgets are ready before running any async code
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();  
 
   //initializing Supabase as our database (ONLINE)
   await Supabase.initialize(

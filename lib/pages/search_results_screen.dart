@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:platoporma/pages/recipe_main_screen.dart';
 import 'package:platoporma/widgets/recipes/recipe_card.dart'; 
 
 //<---------- COLORS mostly used ---------->
@@ -576,12 +577,23 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
             children: [
               // underlying card
               RecipeCard(
-                name: item.name,
+                recipeName: item.name,
                 cuisineType: item.cuisineType,
                 dietType: item.dietType,
                 proteinType: item.proteinType,
                 estimatedPriceCentavos: item.estimatedPriceCentavos,
                 imagePath: item.imagePath,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => RecipeMainScreen(
+                        recipeName: item.name,
+                        isFlagged: _isIngredientSearch,
+                      ),
+                    ),
+                  );
+                },
               ),
 
               // positioned flag
