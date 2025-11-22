@@ -5,13 +5,13 @@ import 'package:google_fonts/google_fonts.dart';
 //Imports for recipe search
 import 'package:platoporma/models/recipe_prediction.dart';
 import 'package:platoporma/services/recipe_search_service.dart';
-import 'package:platoporma/widgets/recipe_prediction_box.dart';
+import 'package:platoporma/widgets/recipes/recipe_prediction_box.dart';
 //Imports for ingredient search
 import 'package:platoporma/models/ingredient_prediction.dart';
 import 'package:platoporma/models/ingredient_pill.dart';
 import 'package:platoporma/services/ingredient_search_service.dart';
-import 'package:platoporma/widgets/ingredient_prediction_box.dart';
-import 'package:platoporma/widgets/ingredient_pill_widget.dart';
+import 'package:platoporma/widgets/ingredients/ingredient_prediction_box.dart';
+import 'package:platoporma/widgets/ingredients/ingredient_pill_widget.dart';
 //Import for search results screen
 import 'package:platoporma/pages/search_results_screen.dart';
 

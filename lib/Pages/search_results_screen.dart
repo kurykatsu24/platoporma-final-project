@@ -1,22 +1,20 @@
-// lib/Pages/search_results_screen.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:platoporma/widgets/recipes/recipe_card.dart'; 
 
-import 'package:platoporma/widgets/recipe_card.dart'; 
-
-// Colors used in your app (kept consistent)
+//<---------- COLORS mostly used ---------->
 const Color bgColor = Color(0xFFFDFFEC);
 const Color appbarColor = Color(0xFFC2EBD2);
 const Color primaryText = Color(0xFF27453E);
 
-// Flag colors (confirmed)
-const Color flagComplete = Color(0xFF0ABFB6); // complete
-const Color flagMissing = Color(0xFFFC4D4D); // missing
+//<---------- FLAG WIDGET COLORS mostly used ---------->
+const Color flagComplete = Color(0xFF0ABFB6); //for complete
+const Color flagMissing = Color(0xFFFC4D4D); //for missing
 
-/// Data model representing a recipe result with ingredient-match metadata.
-/// We fetch recipe fields and compute `matchedIngredientCount`.
+//Data model representing a recipe result with ingredient-match metadata.
+//We fetch recipe fields and compute `matchedIngredientCount`.
 class RecipeResult {
   final String id;
   final String name;
@@ -26,9 +24,9 @@ class RecipeResult {
   final int estimatedPriceCentavos;
   final String imagePath;
 
-  // Ingredient matching metadata (used only for ingredient searches)
-  final int matchedIngredientCount; // how many of the selected ingredients are present in this recipe
-  final int selectedIngredientCount; // how many ingredients were selected in the query
+  //Ingredient matching metadata (feature ni only for ingredient-based searches)
+  final int matchedIngredientCount; //how many of the selected ingredients are present in this recipe (total nga ingredients)
+  final int selectedIngredientCount; //how many ingredients were selected in the query (determine ingredient pills selected))
 
   RecipeResult({
     required this.id,
@@ -84,7 +82,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
     super.initState();
     _queryText = widget.textQuery?.trim() ?? '';
 
-    // If an explicit ingredientList was provided, run ingredient search immediately.
+    //If an explicit ingredientList was provided, run ingredient search immediately.
     if (widget.ingredientList != null) {
       _queryText = widget.ingredientList!.join(', ');
       _isIngredientSearch = true;
