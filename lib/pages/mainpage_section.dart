@@ -1,10 +1,10 @@
 //this page ties all the main pages together (homepage screen, search section, saved recipes section and user profile section) with a bottom navbar
 import 'package:flutter/material.dart';
 import '../widgets/animated_navbar.dart';
-import 'homepage_section.dart';
-import 'search_section.dart';
-import 'saved_section.dart';
-import 'profile_section.dart';
+import 'package:platoporma/pages/homepage_section.dart';
+import 'package:platoporma/pages/search_section.dart';
+import 'package:platoporma/pages/saved_section.dart';
+import 'package:platoporma/pages/profile_section.dart';
 
 class MainPageSection extends StatefulWidget {
   const MainPageSection({super.key});
