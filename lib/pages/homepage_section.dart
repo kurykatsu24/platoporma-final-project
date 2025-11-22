@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:platoporma/pages/recipe_main_screen.dart';
 import 'package:platoporma/widgets/recipes/recipe_card.dart';
 
 class HomePageSection extends StatefulWidget {
@@ -198,7 +199,28 @@ class _HomePageSectionState extends State<HomePageSection> {
                       mainAxisSpacing: 5,         // vertical gap
                       crossAxisSpacing: 5,        // horizontal gap
                       itemCount: recipes.length,
-                      itemBuilder: (context, index) => recipes[index],
+                      itemBuilder: (context, index) {
+                        final recipe = recipes[index];
+                        return RecipeCard(
+                          recipeName: recipe.recipeName,
+                          imagePath: recipe.imagePath,
+                          estimatedPriceCentavos: recipe.estimatedPriceCentavos,
+                          cuisineType: recipe.cuisineType,
+                          dietType: recipe.dietType,
+                          proteinType: recipe.proteinType,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => RecipeMainScreen(
+                                  recipeName: recipe.recipeName,
+                                  isFlagged: false,
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      }
                     ),
                   );
                 }
