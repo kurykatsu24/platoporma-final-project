@@ -2,18 +2,18 @@ import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../models/recipe_prediction.dart';
-import '../services/recipe_search_service.dart';
-import '../Widgets/recipe_prediction_box.dart';
-
-// INGREDIENT: new imports
-import '../models/ingredient_prediction.dart';
-import '../models/ingredient_pill.dart';
-import '../services/ingredient_search_service.dart';
-import '../Widgets/ingredient_prediction_box.dart';
-import '../Widgets/ingredient_pill_widget.dart';
-
-import 'package:platoporma/Pages/search_results_screen.dart';
+//Imports for recipe search
+import 'package:platoporma/models/recipe_prediction.dart';
+import 'package:platoporma/services/recipe_search_service.dart';
+import 'package:platoporma/widgets/recipes/recipe_prediction_box.dart';
+//Imports for ingredient search
+import 'package:platoporma/models/ingredient_prediction.dart';
+import 'package:platoporma/models/ingredient_pill.dart';
+import 'package:platoporma/services/ingredient_search_service.dart';
+import 'package:platoporma/widgets/ingredients/ingredient_prediction_box.dart';
+import 'package:platoporma/widgets/ingredients/ingredient_pill_widget.dart';
+//Import for search results screen
+import 'package:platoporma/pages/search_results_screen.dart';
 
 class SearchSection extends StatefulWidget {
   const SearchSection({super.key});

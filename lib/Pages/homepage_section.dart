@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:platoporma/Widgets/recipe_card.dart';
+import 'package:platoporma/widgets/recipes/recipe_card.dart';
 
 class HomePageSection extends StatefulWidget {
   const HomePageSection({super.key});

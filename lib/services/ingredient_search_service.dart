@@ -1,6 +1,5 @@
-// lib/services/ingredient_search_service.dart
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/ingredient_prediction.dart';
+import 'package:platoporma/models/ingredient_prediction.dart'; 
 
 class IngredientSearchService {
   final SupabaseClient client;

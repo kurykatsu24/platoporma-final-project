@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../models/ingredient_pill.dart';
+import 'package:platoporma/models/ingredient_pill.dart'; 
 
 typedef OnPillDoubleTap = void Function(IngredientPill pill);
 

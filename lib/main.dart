@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:platoporma/Pages/mainpage_section.dart';
+import 'package:platoporma/pages/mainpage_section.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
