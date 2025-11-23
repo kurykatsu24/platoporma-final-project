@@ -589,7 +589,11 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                     MaterialPageRoute(
                       builder: (_) => RecipeMainScreen(
                         recipeName: item.name,
-                        isFlagged: _isIngredientSearch,
+                        isIngredientSearch: _isIngredientSearch,
+                        isComplete: item.isCompleteIngredients,
+                        missingCount: item.missingCount,
+                        matchedCount: item.matchedIngredientCount,
+                        selectedCount: item.selectedIngredientCount,
                       ),
                     ),
                   );

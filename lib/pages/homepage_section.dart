@@ -214,7 +214,11 @@ class _HomePageSectionState extends State<HomePageSection> {
                               MaterialPageRoute(
                                 builder: (_) => RecipeMainScreen(
                                   recipeName: recipe.recipeName,
-                                  isFlagged: false,
+                                  isIngredientSearch: false,
+                                  isComplete: false,
+                                  missingCount: 0,
+                                  matchedCount: 0,
+                                  selectedCount: 0,
                                 ),
                               ),
                             );
