@@ -1,6 +1,4 @@
-// lib/Pages/recipe_main_screen.dart
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -135,16 +133,13 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ===============================
-                        // Recipe Image with stacked buttons
-                        // ===============================
-                        // This image is 1:1 ratio, full width. It has a white bottom border and a black drop shadow.
+
+                        //<----- Recipe Image ----->
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+                          padding: const EdgeInsets.only(bottom: 8),
                           child: Container(
                             // important: clipped to 1:1 aspect ratio
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withOpacity(0.20),
@@ -157,20 +152,19 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                               ),
                             ),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
+                              
                               child: AspectRatio(
-                                aspectRatio: 1.0, // 1:1
+                                aspectRatio: 1.0, 
                                 child: Stack(
                                   fit: StackFit.expand,
                                   children: [
-                                    // Image(s) - pageview if multiple
+                                    //Image displayed on top
                                     if (images.isNotEmpty)
                                       PageView.builder(
                                         itemCount: images.length,
                                         itemBuilder: (context, index) {
                                           final url = images[index];
 
-                                          // ALWAYS treat DB image paths as Flutter asset paths
                                           return Image.asset(
                                             url,
                                             fit: BoxFit.cover,
@@ -183,39 +177,38 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                                     else
                                       _fallbackImageWidget(),
 
-                                    // top-left back button (not fixed; part of stack so scrolls with image)
+                                    //top-left back button (hindi fixed kay part of stack so scrolls along with image)
                                     Positioned(
-                                      top: 12,
-                                      left: 12,
+                                      top: 15,
+                                      left: 15,
                                       child: _circleIconButton(
                                         child: IconButton(
                                           iconSize: 22,
                                           icon: const Icon(Icons.arrow_back, color: Colors.black),
-                                          onPressed: () => Navigator.pop(context),
+                                          onPressed: () => Navigator.pop(context),  
                                         ),
                                       ),
                                     ),
 
-                                    // top-right save button (duplicate of back button code but with png)
+                                    //top-right save button
                                     Positioned(
-                                      top: 12,
-                                      right: 12,
+                                      top: 14,
+                                      right: 14,
                                       child: _circleIconButton(
                                         child: SizedBox(
-                                          width: 42,
-                                          height: 42,
+                                          width: 44,
+                                          height: 44,
                                           child: IconButton(
                                             padding: EdgeInsets.zero,
                                             iconSize: 22,
                                             // Using asset image; if asset not available fallback to bookmark icon
                                             icon: Image.asset(
-                                              'assets/search_inactive.png',
-                                              width: 22,
-                                              height: 22,
-                                              errorBuilder: (_, __, ___) => const Icon(Icons.bookmark_border, color: Colors.black),
+                                              'assets/icon_images/saved_inactive.png',
+                                              width: 23,
+                                              height: 23,
                                             ),
                                             onPressed: () {
-                                              // placeholder: no navigation
+                                              //need to connect to saved recipes section later
                                             },
                                           ),
                                         ),
@@ -228,13 +221,11 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 10),
 
-                        // ===============================
-                        // Recipe Details Container
-                        // ===============================
+                        //<----- Recipe Details Container ----->
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Container(
                             width: double.infinity,
                             padding: const EdgeInsets.all(16),
@@ -252,7 +243,8 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Row -> Left: Name + Pills (column). Right: Estimated Price box
+
+                                //<---- Presented in a row: on the left (Name + Pills (column), and on the right (Estimated Price box) ---->
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -261,7 +253,7 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          // Recipe name
+                                          //Recipe name
                                           Text(
                                             recipe?['name'] ?? widget.recipeName,
                                             style: GoogleFonts.dmSans(
@@ -269,15 +261,17 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                                               fontWeight: FontWeight.w800, // extrabold
                                               letterSpacing: -2,
                                               color: Colors.black,
+                                              height: 1,
                                             ),
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                          const SizedBox(height: 10),
+                                          const SizedBox(height: 12),
 
-                                          // pills: cuisine_type, diet_type, protein_type
+                                          //Pills for cuisine_type, diet_type, protein_type (eithe of the three can show, mostly optional
+                                          //if recipe has both diet type and cuisine type
                                           Wrap(
-                                            spacing: 8,
+                                            spacing: 6,
                                             runSpacing: 6,
                                             children: [
                                               _pill(
@@ -306,11 +300,11 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                                       ),
                                     ),
 
-                                    const SizedBox(width: 12),
+                                    const SizedBox(width: 13),
 
-                                    // Estimated price container
+                                    //Estimated price container
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                      padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 11),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFE2FCEC),
                                         borderRadius: BorderRadius.circular(12),
@@ -321,20 +315,22 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                                           Text(
                                             "Estimated Price",
                                             style: GoogleFonts.dmSans(
-                                              fontSize: 11,
+                                              fontSize: 11.8,
                                               fontStyle: FontStyle.italic,
                                               fontWeight: FontWeight.w500,
                                               color: Colors.black,
+                                              letterSpacing: -0.2,
                                             ),
                                             textAlign: TextAlign.center,
                                           ),
-                                          const SizedBox(height: 6),
+                                          const SizedBox(height: 1),
                                           Text(
                                             _formatPeso(recipe?['estimated_price_centavos']),
                                             style: GoogleFonts.dmSans(
-                                              fontSize: 25,
-                                              fontWeight: FontWeight.w800,
+                                              fontSize: 27,
+                                              fontWeight: FontWeight.w900,
                                               color: Colors.black,
+                                              letterSpacing: -1,
                                             ),
                                             textAlign: TextAlign.center,
                                           ),
@@ -344,27 +340,27 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                                   ],
                                 ),
 
-                                const SizedBox(height: 18),
+                                const SizedBox(height: 25),
 
-                                // Recipe markers (centered)
+                                //Recipe markers (prep time, no. of servings, and total calories)
                                 Center(
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       _markerBox(
-                                        iconAsset: 'assets/clock.png',
+                                        iconAsset: 'assets/icon_images/clock.png',
                                         fallbackIcon: Icons.schedule,
                                         label: _prepTimeText(recipe?['prep_time']),
                                       ),
                                       const SizedBox(width: 20),
                                       _markerBox(
-                                        iconAsset: 'assets/cloche.png',
+                                        iconAsset: 'assets/icon_images/cloche.png',
                                         fallbackIcon: Icons.restaurant_menu,
                                         label: _servingsText(recipe?['base_servings']),
                                       ),
                                       const SizedBox(width: 20),
                                       _markerBox(
-                                        iconAsset: 'assets/flame.png',
+                                        iconAsset: 'assets/icon_images/flame.png',
                                         fallbackIcon: Icons.local_fire_department,
                                         label: _caloriesText(recipe?['total_calories']),
                                       ),
@@ -403,8 +399,9 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                                 Text(
                                   "Ingredients",
                                   style: GoogleFonts.dmSans(
-                                    fontSize: 20,
+                                    fontSize: 26,
                                     fontWeight: FontWeight.w700,
+                                    letterSpacing: -1,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -413,12 +410,13 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                                   "Ingredients will appear here (placeholder).",
                                   style: GoogleFonts.dmSans(),
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 30),
                                 Text(
                                   "Directions",
                                   style: GoogleFonts.dmSans(
-                                    fontSize: 20,
+                                    fontSize: 26,
                                     fontWeight: FontWeight.w700,
+                                    letterSpacing: -1,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -508,10 +506,7 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
     required Color textColor,
   }) {
     return Container(
-      width: 70,
-      height: 24,
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3.8),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(12),
@@ -520,12 +515,10 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
       child: Text(
         label,
         style: GoogleFonts.dmSans(
-          fontSize: 10,
+          fontSize: 11,
           fontWeight: FontWeight.w600,
           color: textColor,
         ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
       ),
     );
   }
@@ -536,20 +529,20 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
     required String label,
   }) {
     return Container(
-      width: 90,
+      width: 80,
       child: Column(
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
               border: Border.all(color: const Color(0xFF659689).withOpacity(0.30), width: 1.5),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
               child: Container(
-                width: 40,
-                height: 40,
+                width: 55,
+                height: 55,
                 decoration: BoxDecoration(
                   color: const Color(0xFFC2EBD2),
                   shape: BoxShape.circle,
@@ -561,16 +554,23 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Text(label, style: GoogleFonts.dmSans(fontSize: 13)),
+          Text(
+            label,
+            style: GoogleFonts.dmSans(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.4,
+              ),
+            ),
         ],
       ),
     );
   }
 
   Widget _iconForAsset(String assetPath, IconData fallback) {
-    // try loading asset; if not present, fallback to icon
+    //try loading asset; if not present, fallback to icon
     try {
-      return Image.asset(assetPath, width: 20, height: 20, errorBuilder: (_, __, ___) {
+      return Image.asset(assetPath, width: 30, height: 30, color: const Color(0xFF416F64), errorBuilder: (_, __, ___) {
         return Icon(fallback, color: const Color(0xFF416F64));
       });
     } catch (_) {
