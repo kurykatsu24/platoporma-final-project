@@ -115,10 +115,11 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
   static const Color appbarColor = Color(0xFFC2EBD2);
   static const Color primaryText = Color(0xFF27453E);
 
-  // CHANGED: inactive ellipse must be coral #E56A48 per your request
-  static const Color filterInactiveEllipse = Color(0xFFE56A48);
-  static const Color filterActiveEllipse = Color(0xFF659EF4);
-  static const Color pillActiveText = Color(0xFFDD6A4D);
+  //Initialize colors for filter search: Inactive ellipse is in Vermillion Color while Active becomes Teal.
+  //Also pill active text is in the same vermillion
+  static const Color filterInactiveEllipse = Color(0xffF06644);
+  static const Color filterActiveEllipse = Color(0xfF0ABFB6);
+  static const Color pillActiveText = Color(0xFfF06644);
 
   // ---------------- Focus/animation handlers ----------------
   void _onFocusGained() {
@@ -235,7 +236,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
       body: Stack(
         fit: StackFit.expand,
         children: [   
-          // ---------- Content (AppBar + Search Row) ----------
+          // <--------- Section of AppBar + the Search Row --------->
           Positioned.fill(
             child: MediaQuery.removeViewInsets(
               removeBottom: true,
@@ -291,8 +292,9 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
                                     style: const TextStyle(
                                       fontFamily: 'NiceHoney',
                                       color: primaryText,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w100,
                                       fontSize: 34,
+                                      letterSpacing: -0.4,                                      
                                       height: 1,
                                     ),
                                   ),
@@ -426,7 +428,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
                                                 fontSize: 14.5,
                                                 fontWeight: FontWeight.w900,
                                                 letterSpacing: -1,
-                                                color: const Color(0xFFEE795C),
+                                                color: const Color(0xFFF06644),
                                               ),
                                             ),
                                           ),
@@ -535,7 +537,9 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
     );
   }
 
-  // ---------------- Filter Box ----------------
+  //<--------------Widget UI Helpers-------------->
+
+  //<-------------- Filter Box ----------------
   Widget _buildFilterBox(double screenW) {
     // Compute target size so it's roughly 20% of width but also 1:1 square
     final containerWidth = (screenW - 32) * 0.15; // 16px horizontal padding both sides
@@ -572,7 +576,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              // filter icon centered
+              //filter icon centered
               Center(
                 child: Padding(
                   padding: const EdgeInsets.all(13.0),
@@ -591,7 +595,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
                   width: 15,
                   height: 15,
                   decoration: BoxDecoration(
-                    // CHANGED: use coral when inactive; blue when active
+                    //state change: Vermillion color when inactive; and Blue when active
                     color: _activeFilter == FilterType.none ? filterInactiveEllipse : filterActiveEllipse,
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 2),
@@ -605,7 +609,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
     );
   }
 
-  // ---------------- Filter Pills in dropdown ----------------
+  // <------------ Filter Pills used in dropdown ----------->
   Widget _buildFilterPill(FilterType type, String label) {
     final isActive = _activeFilter == type;
     return GestureDetector(
@@ -629,7 +633,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
           // NEW: border for BOTH active and inactive states
           border: Border.all(
             color: isActive 
-                ? const Color(0xFFDD6A4D)                       // active border color
+                ? const Color(0xFFF06644)                       // active border color
                 : Colors.black.withOpacity(0.60),               // inactive border color
             width: isActive ? 2.0 : 1.5,                        // adjust width here
           ),
@@ -638,7 +642,7 @@ class _SearchSectionState extends State<SearchSection> with SingleTickerProvider
           label,
           style: GoogleFonts.dmSans(
             fontSize: 13,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+            fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
             color: isActive ? pillActiveText : const Color(0xFF6E6E6E),
             letterSpacing: -0.5,
           ),

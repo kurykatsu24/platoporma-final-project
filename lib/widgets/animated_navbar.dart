@@ -17,7 +17,7 @@ class AnimatedNavBar extends StatefulWidget {
 
 class _AnimatedNavBarState extends State<AnimatedNavBar>
     with SingleTickerProviderStateMixin {
-  final Color activeColor = const Color(0xFFEE795C);
+  final Color activeColor = const Color(0xFFF06644);
   final Color bgColor = const Color(0xFFFDFFEC);
 
   final List<Map<String, String>> items = [
@@ -65,8 +65,8 @@ class _AnimatedNavBarState extends State<AnimatedNavBar>
           color: bgColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              offset: const Offset(0, -4), // shadow above
+              color: Colors.black.withOpacity(0.25),
+              offset: const Offset(0, -5), // shadow above
               blurRadius: 10,
               spreadRadius: 2,
             ),

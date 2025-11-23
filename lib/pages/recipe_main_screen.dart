@@ -34,7 +34,7 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
   bool _loading = true;
   String? _error;
 
-  // fallback local image (from uploaded file). Use this exact path as requested.
+  //fallback local image (from uploaded file). Use this exact path as requested.
   final String localFallbackImage = 'file:///mnt/data/c5eb7309-968a-46d0-b496-5cada022ae3f.png';
 
   @override
@@ -516,9 +516,9 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
     );
   }
 
-  // -------------------------
-  // Widgets & helpers
-  // -------------------------
+  
+  //<------- Widget UI helpers ------>
+  
   Widget buildIngredientFlag() {
     if (!widget.isIngredientSearch) return const SizedBox.shrink();
 
@@ -534,7 +534,6 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // --- Line 1 ---
           Text(
             complete
                 ? 'Complete Ingredients'
@@ -544,9 +543,7 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
               fontSize: 13.3,
               fontWeight: FontWeight.w700,
             ),
-          ),
-
-          // --- Line 2 (Missing only) ---
+          ),          
           if (!complete) ...[
             const SizedBox(height: 2),
             Text(

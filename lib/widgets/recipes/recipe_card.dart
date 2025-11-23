@@ -118,13 +118,13 @@ class RecipeCard extends StatelessWidget {
 
             const SizedBox(height: 8),
 
-            // NAME + PRICE ROW
+            //Name + Row
             Padding(
               padding: const EdgeInsets.only(left: 10, right: 10),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // NAME (expands left, respects padding on right)
+                  //Name (it respects padding on right if ang text malaba)
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.only(right: 10), // space for price box
@@ -132,8 +132,8 @@ class RecipeCard extends StatelessWidget {
                         recipeName,
                         maxLines: null,
                         style: GoogleFonts.dmSans(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 16.4,
+                          fontWeight: FontWeight.w900,
                           letterSpacing: -1,
                           color: Colors.black,
                         ),

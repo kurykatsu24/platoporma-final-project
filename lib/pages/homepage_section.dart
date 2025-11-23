@@ -44,20 +44,16 @@ class _HomePageSectionState extends State<HomePageSection> {
     return Scaffold(
       backgroundColor: const Color(0xFFFDFFEC),
 
-            // ------------------ Appbar ------------------
+            //< -------------- The Appbar ------------------ >
       body: CustomScrollView(
         slivers: [
-
-          // ------------------ Appbar ------------------
           SliverAppBar(
             automaticallyImplyLeading: false,
             pinned: false,
             floating: false,
-            backgroundColor: const Color(0xFFCCEDD8),
+            backgroundColor: const Color(0xFFC2EBD2),
             elevation: 0,
             expandedHeight: 135,
-
-            // Rounded bottom corners
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.vertical(
                 bottom: Radius.circular(30),
@@ -67,21 +63,16 @@ class _HomePageSectionState extends State<HomePageSection> {
             flexibleSpace: FlexibleSpaceBar(
               background: SafeArea(
                 bottom: false,
-
-                //Custom appbar
                 child: Container(
                   decoration: const BoxDecoration(
-                    color: Color(0xFFCCEDD8),
+                    color: Color(0xFFC2EBD2),
                     borderRadius: BorderRadius.vertical(
                       bottom: Radius.circular(30),
                     ),
                   ),
-
-                  //Appbar contents
                   child: Builder(
                     builder: (context) {
                       final screenWidth = MediaQuery.of(context).size.width;
-
                       return Padding(
                         padding: EdgeInsets.symmetric(
                           horizontal: screenWidth * 0.04,
@@ -90,7 +81,7 @@ class _HomePageSectionState extends State<HomePageSection> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            // Logo
+                            //Logo displayed sa right
                             Image.asset(
                               'assets/images/platoporma_logo_whitebg2.png',
                               width: 80,
@@ -98,8 +89,8 @@ class _HomePageSectionState extends State<HomePageSection> {
 
                             SizedBox(width: screenWidth * 0.03),
 
-                            //Text Column
-                            ///THIS PART MAKES THE TEXT WRAP DOWN INSTEAD OF OVERFLOW(right)
+                            //<---------- Text Column ---------->
+                            ///used for texts especially "first name" retrieval to handle long first names
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,22 +98,24 @@ class _HomePageSectionState extends State<HomePageSection> {
                                 children: [
                                   Text(
                                     "Welcome,",
-                                    style: GoogleFonts.poppins(
+                                    style: TextStyle(
+                                      fontFamily: 'NiceHoney',
                                       color: const Color(0xFF27453E),
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 30,
-                                      letterSpacing: -0.5,
-                                      height: 0.8,
+                                      fontWeight: FontWeight.w100,
+                                      fontSize: 33,
+                                      letterSpacing: -0.2,
+                                      height: 0.7,
                                     ),
                                   ),
 
                                   Text(
                                     "${firstName ?? ""}!",
-                                    style: GoogleFonts.poppins(
+                                    style: TextStyle(
+                                      fontFamily: 'NiceHoney',
                                       color: const Color(0xFF27453E),
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 27,
-                                      letterSpacing: -1,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 28,
+                                      letterSpacing: -0.3,
                                     ),
                                     softWrap: true,
                                     maxLines: null,
@@ -130,13 +123,12 @@ class _HomePageSectionState extends State<HomePageSection> {
                                   ),
 
                                   Text(
-                                    "Let’s find something delicious and comforting today",
+                                    "Take a scroll at a wide range of recipes",
                                     style: GoogleFonts.poppins(
                                       color: const Color(0xFF27453E),
-                                      fontSize: 11,
-                                      fontStyle: FontStyle.italic,
+                                      fontSize: 13,
                                       fontWeight: FontWeight.w500,
-                                      letterSpacing: -0.9,
+                                      letterSpacing: -0.5,
                                     ),
                                     softWrap: true,
                                     maxLines: null,
@@ -155,13 +147,11 @@ class _HomePageSectionState extends State<HomePageSection> {
             ),
           ),
 
-          // Sticky header (BLUE TEST BAR)
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _StickyHeaderDelegate(),
+          //Sticky header for explore recipes with horizontal carousel
+          SliverPersistentHeader(pinned: true, delegate: _StickyHeaderDelegate(),
           ),
 
-          // ------------------ BODY ------------------
+          // <------------- Main Body w/ recipe cards --------------->
           SliverToBoxAdapter(
             child: FutureBuilder<List<RecipeCard>>(
               future: fetchRecipes(),
@@ -190,14 +180,14 @@ class _HomePageSectionState extends State<HomePageSection> {
                 } else {
                   final recipes = snapshot.data!;
                   return Padding(
-                    padding: const EdgeInsets.only(left: 10, right: 10, bottom: 15),
+                    padding: const EdgeInsets.only(left: 7, right: 7, bottom: 6),
                     child: MasonryGridView.count(
                       padding: EdgeInsets.only(top: 0),
                       physics: const NeverScrollableScrollPhysics(), // important: disables internal scroll
                       shrinkWrap: true, // important: allows it to fit inside scroll view
                       crossAxisCount: 2,           // 2 columns
-                      mainAxisSpacing: 5,         // vertical gap
-                      crossAxisSpacing: 5,        // horizontal gap
+                      mainAxisSpacing: 2,         // vertical gap
+                      crossAxisSpacing: 2,        // horizontal gap
                       itemCount: recipes.length,
                       itemBuilder: (context, index) {
                         final recipe = recipes[index];
@@ -237,6 +227,7 @@ class _HomePageSectionState extends State<HomePageSection> {
   }
 }
 
+//created separate class for the stickyheader: Explore Recipes
 class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
@@ -253,26 +244,27 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
           color: const Color(0xFFFDFFEC).withOpacity(0.85),
         
           child: Padding(
-            padding: const EdgeInsets.only(left: 25, right: 25, top: 25, bottom: 5),
+            padding: const EdgeInsets.only(left: 18, right: 25, top: 25, bottom: 5),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ---------- Title ----------
+                // <---- Title ------>
                 Text(
                   "Explore Recipes",
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w400,
-                    fontSize: 32,
-                    color: const Color(0xFF27453E),
-                    letterSpacing: -2.3,
+                  style: const TextStyle(
+                  fontFamily: 'NiceHoney',
+                  fontSize: 28,
+                  fontWeight: FontWeight.w100, 
+                  color: const Color(0xff27453E),
+                  letterSpacing: -0.3,
                   ),
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
 
-                // ---------- Horizontal Pills ----------
+                // <--------- Horizontal Pills Carousel ------>
                 SizedBox(
-                  height: 33, // height of the pills container
+                  height: 33,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
@@ -292,22 +284,22 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
     );
   }
 
-  // ---------- Creates an inactive pill ----------
+  // <------ Creates an inactive pill ------->
   Widget _buildCategoryPill(String label) {
     return Container(
-      margin: const EdgeInsets.only(right: 8),
+      margin: const EdgeInsets.only(right: 10),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFE3E5D4), // light gray fill
+        color: const Color(0xFFECECEC), 
         borderRadius: BorderRadius.circular(13),
-        border: Border.all(color: const Color(0xFFE6E6E6)), // gray outline
+        border: Border.all(color: Colors.black.withOpacity(0.60), width: 1.5),
       ),
       child: Text(
         label,
         style: GoogleFonts.dmSans(
           fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: const Color(0xFF72736A),
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF6E6E6E),
           letterSpacing: -0.5,
         ),
       ),
@@ -315,10 +307,10 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  double get maxExtent => 130; // Increased to fit title + pills
+  double get maxExtent => 130; //increased to fit title + pills
 
   @override
-  double get minExtent => 130; // Same for non-collapsing sticky header
+  double get minExtent => 130; //same for non-collapsing sticky header
 
   @override
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
