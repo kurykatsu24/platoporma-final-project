@@ -241,7 +241,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
     }
 
     try {
-      // 1️⃣ Fetch ingredient IDs for selected names
+      //Fetch ingredient IDs for selected names
       final Map<String, String> nameToId = {};
 
       for (final name in selectedNames) {
@@ -267,7 +267,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
         return;
       }
 
-      // 2️⃣ Get recipes that contain ANY of these ingredients
+      //Get recipes that contain ANY of these ingredients
       final matchedRows = await supabase
           .from('recipe_ingredients')
           .select('recipe_id, ingredient_id')
@@ -293,7 +293,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
 
       final recipeIds = matchedMap.keys.toList();
 
-      // 3️⃣ Fetch ALL recipe ingredients to compute missing ingredients
+      //Fetch ALL recipe ingredients to compute missing ingredients
       final allIngRows = await supabase
           .from('recipe_ingredients')
           .select('recipe_id, ingredient_id')
@@ -308,7 +308,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
         fullIngMap[recipeId]!.add(ingredientId);
       }
 
-      // 4️⃣ Fetch recipe info
+      //Fetch recipe info
       final recipeRows = await supabase
           .from('recipes')
           .select('id, name, cuisine_type, diet_type, protein_type, estimated_price_centavos, images')
@@ -404,9 +404,10 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontFamily: 'NiceHoney',
-                      fontSize: 38,
-                      fontWeight: FontWeight.w800,
                       color: primaryText,
+                      fontWeight: FontWeight.w100,
+                      fontSize: 34,
+                      letterSpacing: -0.4, 
                       height: 1,
                     ),
                   ),
