@@ -20,6 +20,8 @@ class RecipeMainScreen extends StatefulWidget {
 class _RecipeMainScreenState extends State<RecipeMainScreen> {
   final supabase = Supabase.instance.client;
   Map<String, dynamic>? recipe;
+  List<Map<String, dynamic>> recipeIngredients = [];
+
   bool _loading = true;
   String? _error;
 
@@ -70,6 +72,17 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
         recipe = Map<String, dynamic>.from(resp as Map);
         _loading = false;
       });
+      try {
+        final ing = await _fetchIngredientsForRecipe(recipe!['id']);
+        setState(() {
+          recipeIngredients = ing;
+          _loading = false;
+        });
+      } catch (e) {
+        debugPrint("Ingredient fetch error: $e");
+        setState(() => _loading = false);
+      }
+
     } catch (e, st) {
       debugPrint('Fetch recipe error: $e\n$st');
       setState(() {
@@ -77,6 +90,21 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
         _loading = false;
       });
     }
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchIngredientsForRecipe(String recipeId) async {
+    final result = await supabase
+        .from('recipe_ingredients')
+        .select('''
+          id,
+          quantity_q,
+          prepared_type,
+          ingredients ( name ),
+          ingredient_units ( unit_name, conversion )
+        ''')
+        .eq('recipe_id', recipeId);
+
+    return List<Map<String, dynamic>>.from(result);
   }
 
   List<String> _normalizeImages(dynamic raw) {
@@ -374,9 +402,7 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
 
                         const SizedBox(height: 12),
 
-                        // ===============================
-                        // Ingredients & Procedures placeholder container
-                        // ===============================
+                        //<----- Ingredients & Procedures placeholder container ----->
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: Container(
@@ -405,12 +431,28 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                // Placeholder: you said you're tired, so keep placeholder style
-                                Text(
-                                  "Ingredients will appear here (placeholder).",
-                                  style: GoogleFonts.dmSans(),
+                                // ----- INGREDIENT LIST -----
+                                recipeIngredients.isEmpty
+                                    ? Text(
+                                        "No ingredients found.",
+                                        style: GoogleFonts.dmSans(),
+                                      )
+                                    : Column(
+                                        children: recipeIngredients
+                                            .map((item) => _ingredientItem(item))
+                                            .toList(),
+                                      ),
+
+                                const SizedBox(height: 22),
+
+                                // ----- SEPARATOR -----
+                                Container(
+                                  height: 1,
+                                  color: const Color(0xFF659689).withOpacity(0.30),
                                 ),
-                                const SizedBox(height: 30),
+
+                                const SizedBox(height: 22),
+                                
                                 Text(
                                   "Directions",
                                   style: GoogleFonts.dmSans(
@@ -421,12 +463,30 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 if (recipe?['procedures'] is List)
-                                  ..._buildProcedureList(recipe!['procedures'])
+                                  DefaultTextStyle.merge(
+                                    style: GoogleFonts.dmSans(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w100,
+                                      height: 1.5,
+                                      letterSpacing: -0.3,
+                                      color: Colors.black87,
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: _buildProcedureList(recipe!['procedures']),
+                                    ),
+                                  )
                                 else
                                   Text(
                                     recipe?['procedures']?.toString() ?? "No procedures available.",
-                                    style: GoogleFonts.dmSans(),
+                                    style: GoogleFonts.dmSans(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.6,
+                                      
+                                    ),
                                   ),
+
                                 const SizedBox(height: 12),
                               ],
                             ),
@@ -442,7 +502,7 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
       persistentFooterButtons: widget.isFlagged
           ? [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.red,
                   borderRadius: BorderRadius.circular(8),
@@ -578,20 +638,108 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
     }
   }
 
+  //helpers for ingredients
+  String _formatUnit(String unitName, num convertedQty) {
+    if (unitName.isEmpty) return "";
+
+    if (convertedQty <= 1) return unitName;
+
+    if (unitName.endsWith("s")) return unitName;
+
+    return "${unitName}s";
+  }
+
+  
+
+  Widget _ingredientItem(Map<String, dynamic> item) {
+    final qty = item['quantity_q'] ?? 0;
+    final ingr = item['ingredients'];
+    final unit = item['ingredient_units'];
+
+    final name = ingr?['name']?.toString() ?? "";
+    final prepared = item['prepared_type']?.toString().trim();
+    final unitName = unit?['unit_name']?.toString() ?? "";
+    final conversion = unit?['conversion'] == null
+        ? 1.0
+        : double.tryParse(unit['conversion'].toString()) ?? 1.0;
+
+    // Detect fractional units such as "1/2 cup", "1/4 kilo", "½ cup"
+    final bool isFractionUnit =
+        unitName.contains('/') || unitName.contains('½') || unitName.contains('¼') || unitName.contains('¾');
+
+    String displayText;
+
+    if (isFractionUnit) {
+      // ---- Fraction units: ignore numeric conversion ----
+      displayText = "$unitName $name";
+    } else {
+      // ---- Normal numeric units ----
+      final value = qty * conversion;
+      final qtyText = (value % 1 == 0) ? value.toInt().toString() : value.toString();
+      final unitText = _formatUnit(unitName, value);
+
+      displayText = "$qtyText $unitText $name";
+    }
+
+    if (prepared != null && prepared.isNotEmpty) {
+      displayText += ", $prepared";
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              "•",
+              style: TextStyle(
+                color: Color(0xFFF06644),
+                fontSize: 20,
+                height: 1,
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              displayText,
+              style: GoogleFonts.dmSans(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                letterSpacing: -0.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+
   List<Widget> _buildProcedureList(dynamic rawProcedures) {
     if (rawProcedures is List) {
       return List.generate(
         rawProcedures.length,
         (i) => Padding(
-          padding: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.only(bottom: 12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("${i + 1}.  ", style: GoogleFonts.dmSans()),
+              Text(
+                "${i + 1}.",
+                style: GoogleFonts.dmSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   rawProcedures[i].toString(),
-                  style: GoogleFonts.dmSans(),
                 ),
               ),
             ],
@@ -599,11 +747,7 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
         ),
       );
     }
-    return [
-      Text(
-        rawProcedures?.toString() ?? "No procedures",
-        style: GoogleFonts.dmSans(),
-      )
-    ];
+
+    return [Text(rawProcedures.toString())];
   }
 }
