@@ -1,18 +1,25 @@
-// lib/Pages/recipe_main_screen.dart
 import 'dart:io';
-
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RecipeMainScreen extends StatefulWidget {
   final String recipeName;
-  final bool isFlagged;
+  final bool isIngredientSearch;
+  final bool isComplete;
+  final int missingCount;
+  final int matchedCount;
+  final int selectedCount;
 
   const RecipeMainScreen({
     super.key,
     required this.recipeName,
-    required this.isFlagged,
+    required this.isIngredientSearch,
+    required this.isComplete,
+    required this.missingCount,
+    required this.matchedCount,
+    required this.selectedCount,
   });
 
   @override
@@ -22,6 +29,8 @@ class RecipeMainScreen extends StatefulWidget {
 class _RecipeMainScreenState extends State<RecipeMainScreen> {
   final supabase = Supabase.instance.client;
   Map<String, dynamic>? recipe;
+  List<Map<String, dynamic>> recipeIngredients = [];
+
   bool _loading = true;
   String? _error;
 
@@ -72,6 +81,17 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
         recipe = Map<String, dynamic>.from(resp as Map);
         _loading = false;
       });
+      try {
+        final ing = await _fetchIngredientsForRecipe(recipe!['id']);
+        setState(() {
+          recipeIngredients = ing;
+          _loading = false;
+        });
+      } catch (e) {
+        debugPrint("Ingredient fetch error: $e");
+        setState(() => _loading = false);
+      }
+
     } catch (e, st) {
       debugPrint('Fetch recipe error: $e\n$st');
       setState(() {
@@ -79,6 +99,21 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
         _loading = false;
       });
     }
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchIngredientsForRecipe(String recipeId) async {
+    final result = await supabase
+        .from('recipe_ingredients')
+        .select('''
+          id,
+          quantity_q,
+          prepared_type,
+          ingredients ( name ),
+          ingredient_units ( unit_name, conversion )
+        ''')
+        .eq('recipe_id', recipeId);
+
+    return List<Map<String, dynamic>>.from(result);
   }
 
   List<String> _normalizeImages(dynamic raw) {
@@ -123,348 +158,411 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
     final bgColor = const Color(0xFFFDFFEC);
     final images = _normalizeImages(recipe?['images']);
 
-    return Scaffold(
+    return Scaffold(  
       backgroundColor: bgColor,
-      body: SafeArea(
-        bottom: false,
-        child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : _error != null
-                ? Center(child: Text(_error!, style: GoogleFonts.dmSans(color: Colors.red)))
-                : SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // ===============================
-                        // Recipe Image with stacked buttons
-                        // ===============================
-                        // This image is 1:1 ratio, full width. It has a white bottom border and a black drop shadow.
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
-                          child: Container(
-                            // important: clipped to 1:1 aspect ratio
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.20),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                              border: const Border(
-                                bottom: BorderSide(width: 8, color: Colors.white),
-                              ),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: AspectRatio(
-                                aspectRatio: 1.0, // 1:1
-                                child: Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    // Image(s) - pageview if multiple
-                                    if (images.isNotEmpty)
-                                      PageView.builder(
-                                        itemCount: images.length,
-                                        itemBuilder: (context, index) {
-                                          final url = images[index];
 
-                                          // ALWAYS treat DB image paths as Flutter asset paths
-                                          return Image.asset(
-                                            url,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, __, ___) {
-                                              return _fallbackImageWidget();
-                                            },
-                                          );
-                                        },
-                                      )
-                                    else
-                                      _fallbackImageWidget(),
+      // NEW: Wrap entire SafeArea + Scroll in a Stack so we can overlay the floating flag
+      body: Stack(
+        children: [
+          SafeArea(
+            bottom: false,
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : _error != null
+                    ? Center(
+                        child: Text(
+                          _error!,
+                          style: GoogleFonts.dmSans(color: Colors.red),
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
 
-                                    // top-left back button (not fixed; part of stack so scrolls with image)
-                                    Positioned(
-                                      top: 12,
-                                      left: 12,
-                                      child: _circleIconButton(
-                                        child: IconButton(
-                                          iconSize: 22,
-                                          icon: const Icon(Icons.arrow_back, color: Colors.black),
-                                          onPressed: () => Navigator.pop(context),
-                                        ),
-                                      ),
+                    
+
+                            //<----- Recipe Image ----->
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.20),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
                                     ),
+                                  ],
+                                  border: const Border(
+                                    bottom: BorderSide(width: 8, color: Colors.white),
+                                  ),
+                                ),
+                                child: ClipRRect(
+                                  child: AspectRatio(
+                                    aspectRatio: 1.0,
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        if (images.isNotEmpty)
+                                          PageView.builder(
+                                            itemCount: images.length,
+                                            itemBuilder: (context, index) {
+                                              final url = images[index];
 
-                                    // top-right save button (duplicate of back button code but with png)
-                                    Positioned(
-                                      top: 12,
-                                      right: 12,
-                                      child: _circleIconButton(
-                                        child: SizedBox(
-                                          width: 42,
-                                          height: 42,
-                                          child: IconButton(
-                                            padding: EdgeInsets.zero,
-                                            iconSize: 22,
-                                            // Using asset image; if asset not available fallback to bookmark icon
-                                            icon: Image.asset(
-                                              'assets/search_inactive.png',
-                                              width: 22,
-                                              height: 22,
-                                              errorBuilder: (_, __, ___) => const Icon(Icons.bookmark_border, color: Colors.black),
-                                            ),
-                                            onPressed: () {
-                                              // placeholder: no navigation
+                                              return Image.asset(
+                                                url,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (_, __, ___) {
+                                                  return _fallbackImageWidget();
+                                                },
+                                              );
                                             },
+                                          )
+                                        else
+                                          _fallbackImageWidget(),
+
+                                        //top-left back button
+                                        Positioned(
+                                          top: 15,
+                                          left: 15,
+                                          child: _circleIconButton(
+                                            child: IconButton(
+                                              iconSize: 22,
+                                              icon: const Icon(Icons.arrow_back, color: Colors.black),
+                                              onPressed: () => Navigator.pop(context),
+                                            ),
                                           ),
                                         ),
-                                      ),
+
+                                        //top-right save button
+                                        Positioned(
+                                          top: 14,
+                                          right: 14,
+                                          child: _circleIconButton(
+                                            child: SizedBox(
+                                              width: 44,
+                                              height: 44,
+                                              child: IconButton(
+                                                padding: EdgeInsets.zero,
+                                                iconSize: 22,
+                                                icon: Image.asset(
+                                                  'assets/icon_images/saved_inactive.png',
+                                                  width: 23,
+                                                  height: 23,
+                                                ),
+                                                onPressed: () {},
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            //<----- Recipe Details Container ----->
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.20),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 2),
                                     ),
                                   ],
                                 ),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // ===============================
-                        // Recipe Details Container
-                        // ===============================
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.20),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Row -> Left: Name + Pills (column). Right: Estimated Price box
-                                Row(
+                                child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // left column
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          // Recipe name
-                                          Text(
-                                            recipe?['name'] ?? widget.recipeName,
-                                            style: GoogleFonts.dmSans(
-                                              fontSize: 32,
-                                              fontWeight: FontWeight.w800, // extrabold
-                                              letterSpacing: -2,
-                                              color: Colors.black,
-                                            ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const SizedBox(height: 10),
+                                  children: [                            
 
-                                          // pills: cuisine_type, diet_type, protein_type
-                                          Wrap(
-                                            spacing: 8,
-                                            runSpacing: 6,
+                                    //<---- Name + Pills + Price ---->
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+
+                                        //<---- Left Column ---->
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              _pill(
-                                                label: recipe?['cuisine_type']?.toString() ?? '-',
-                                                bgColor: const Color(0xFFD6FFFF),
-                                                outlineColor: const Color(0xFF0B9999).withOpacity(1), // OB9999 approximated
-                                                textColor: const Color(0xFF0B9999),
+                                              Text(
+                                                recipe?['name'] ?? widget.recipeName,
+                                                style: GoogleFonts.dmSans(
+                                                  fontSize: 32,
+                                                  fontWeight: FontWeight.w800,
+                                                  letterSpacing: -2,
+                                                  color: Colors.black,
+                                                  height: 1,
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),                                                                                      
+
+                                              const SizedBox(height: 12),
+
+                                              Wrap(
+                                                spacing: 6,
+                                                runSpacing: 6,
+                                                children: [
+                                                  _pill(
+                                                    label: recipe?['cuisine_type']?.toString() ?? '-',
+                                                    bgColor: const Color(0xFFD6FFFF),
+                                                    outlineColor: const Color(0xFF0B9999),
+                                                    textColor: const Color(0xFF0B9999),
+                                                  ),
+                                                  if ((recipe?['diet_type'] ?? '').toString().trim().isNotEmpty)
+                                                    _pill(
+                                                      label: (recipe?['diet_type'] ?? '').toString(),
+                                                      bgColor: const Color(0xFFFFFACD),
+                                                      outlineColor: const Color(0xFFCD901F),
+                                                      textColor: const Color(0xFFCD901F),
+                                                    ),
+                                                  if ((recipe?['protein_type'] ?? '').toString().trim().isNotEmpty)
+                                                    _pill(
+                                                      label: (recipe?['protein_type'] ?? '').toString(),
+                                                      bgColor: const Color(0xFFFFD0E5),
+                                                      outlineColor: const Color(0xFFC73576),
+                                                      textColor: const Color(0xFFC73576),
+                                                    ),
+                                                ],
                                               ),
-                                              if ((recipe?['diet_type'] ?? '').toString().trim().isNotEmpty)
-                                                _pill(
-                                                  label: (recipe?['diet_type'] ?? '').toString(),
-                                                  bgColor: const Color(0xFFFFFACD),
-                                                  outlineColor: const Color(0xFFCD901F),
-                                                  textColor: const Color(0xFFCD901F),
-                                                ),
-                                              if ((recipe?['protein_type'] ?? '').toString().trim().isNotEmpty)
-                                                _pill(
-                                                  label: (recipe?['protein_type'] ?? '').toString(),
-                                                  bgColor: const Color(0xFFFFD0E5),
-                                                  outlineColor: const Color(0xFFC73576),
-                                                  textColor: const Color(0xFFC73576),
-                                                ),
                                             ],
                                           ),
-                                        ],
-                                      ),
+                                        ),
+
+                                        const SizedBox(width: 13),
+
+                                        //<---- Estimated Price ---->
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 11),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFE2FCEC),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                "Estimated Price",
+                                                style: GoogleFonts.dmSans(
+                                                  fontSize: 11.8,
+                                                  fontStyle: FontStyle.italic,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.black,
+                                                  letterSpacing: -0.2,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              const SizedBox(height: 1),
+                                              Text(
+                                                _formatPeso(recipe?['estimated_price_centavos']),
+                                                style: GoogleFonts.dmSans(
+                                                  fontSize: 27,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: Colors.black,
+                                                  letterSpacing: -1,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
 
-                                    const SizedBox(width: 12),
+                                    const SizedBox(height: 12),
 
-                                    // Estimated price container
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFE2FCEC),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Column(
+                                    //<---- Flag for Ingredient based search results ---->
+                                    buildIngredientFlag(),                                   
+
+                                    const SizedBox(height: 25),
+
+                                    //<---- Marker Boxes ---->
+                                    Center(
+                                      child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Text(
-                                            "Estimated Price",
-                                            style: GoogleFonts.dmSans(
-                                              fontSize: 11,
-                                              fontStyle: FontStyle.italic,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.black,
-                                            ),
-                                            textAlign: TextAlign.center,
+                                          _markerBox(
+                                            iconAsset: 'assets/icon_images/clock.png',
+                                            fallbackIcon: Icons.schedule,
+                                            label: _prepTimeText(recipe?['prep_time']),
                                           ),
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            _formatPeso(recipe?['estimated_price_centavos']),
-                                            style: GoogleFonts.dmSans(
-                                              fontSize: 25,
-                                              fontWeight: FontWeight.w800,
-                                              color: Colors.black,
-                                            ),
-                                            textAlign: TextAlign.center,
+                                          const SizedBox(width: 20),
+                                          _markerBox(
+                                            iconAsset: 'assets/icon_images/cloche.png',
+                                            fallbackIcon: Icons.restaurant_menu,
+                                            label: _servingsText(recipe?['base_servings']),
+                                          ),
+                                          const SizedBox(width: 20),
+                                          _markerBox(
+                                            iconAsset: 'assets/icon_images/flame.png',
+                                            fallbackIcon: Icons.local_fire_department,
+                                            label: _caloriesText(recipe?['total_calories']),
                                           ),
                                         ],
                                       ),
                                     ),
                                   ],
                                 ),
-
-                                const SizedBox(height: 18),
-
-                                // Recipe markers (centered)
-                                Center(
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      _markerBox(
-                                        iconAsset: 'assets/clock.png',
-                                        fallbackIcon: Icons.schedule,
-                                        label: _prepTimeText(recipe?['prep_time']),
-                                      ),
-                                      const SizedBox(width: 20),
-                                      _markerBox(
-                                        iconAsset: 'assets/cloche.png',
-                                        fallbackIcon: Icons.restaurant_menu,
-                                        label: _servingsText(recipe?['base_servings']),
-                                      ),
-                                      const SizedBox(width: 20),
-                                      _markerBox(
-                                        iconAsset: 'assets/flame.png',
-                                        fallbackIcon: Icons.local_fire_department,
-                                        label: _caloriesText(recipe?['total_calories']),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
+
+                            const SizedBox(height: 12),
+
+                            //<----- Ingredients & Procedures ----->
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.20),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Ingredients",
+                                      style: GoogleFonts.dmSans(
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: -1,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+
+                                    recipeIngredients.isEmpty
+                                        ? Text("No ingredients found.", style: GoogleFonts.dmSans())
+                                        : Column(
+                                            children:
+                                                recipeIngredients.map((item) => _ingredientItem(item)).toList(),
+                                          ),
+
+                                    const SizedBox(height: 22),
+
+                                    Container(
+                                      height: 1,
+                                      color: const Color(0xFF659689).withOpacity(0.30),
+                                    ),
+
+                                    const SizedBox(height: 22),
+
+                                    Text(
+                                      "Directions",
+                                      style: GoogleFonts.dmSans(
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: -1,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+
+                                    if (recipe?['procedures'] is List)
+                                      DefaultTextStyle.merge(
+                                        style: GoogleFonts.dmSans(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w100,
+                                          height: 1.5,
+                                          letterSpacing: -0.3,
+                                          color: Colors.black87,
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: _buildProcedureList(recipe!['procedures']),
+                                        ),
+                                      )
+                                    else
+                                      Text(
+                                        recipe?['procedures']?.toString() ?? "No procedures available.",
+                                        style: GoogleFonts.dmSans(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.6,
+                                        ),
+                                      ),
+
+                                    const SizedBox(height: 12),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 30),
+                          ],
                         ),
-
-                        const SizedBox(height: 12),
-
-                        // ===============================
-                        // Ingredients & Procedures placeholder container
-                        // ===============================
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.20),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Ingredients",
-                                  style: GoogleFonts.dmSans(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                // Placeholder: you said you're tired, so keep placeholder style
-                                Text(
-                                  "Ingredients will appear here (placeholder).",
-                                  style: GoogleFonts.dmSans(),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  "Directions",
-                                  style: GoogleFonts.dmSans(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                if (recipe?['procedures'] is List)
-                                  ..._buildProcedureList(recipe!['procedures'])
-                                else
-                                  Text(
-                                    recipe?['procedures']?.toString() ?? "No procedures available.",
-                                    style: GoogleFonts.dmSans(),
-                                  ),
-                                const SizedBox(height: 12),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 30),
-                      ],
-                    ),
-                  ),
+                      ),
+          ),
+        ],
       ),
-      // floating FLAG (top-right) if flagged: kept as before, but positioned via Stack previously; since we removed the outer stack, keep as overlay via this builder:
-      persistentFooterButtons: widget.isFlagged
-          ? [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  "FLAGGED",
-                  style: GoogleFonts.dmSans(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              )
-            ]
-          : null,
     );
   }
 
   // -------------------------
   // Widgets & helpers
   // -------------------------
+  Widget buildIngredientFlag() {
+    if (!widget.isIngredientSearch) return const SizedBox.shrink();
+
+    final bool complete = widget.isComplete;
+    final Color bg = complete ? const Color(0xFF0ABFB6) : const Color(0xFFFC4D4D);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // --- Line 1 ---
+          Text(
+            complete
+                ? 'Complete Ingredients'
+                : 'Missing Ingredients (${widget.missingCount})',
+            style: GoogleFonts.dmSans(
+              color: Colors.white,
+              fontSize: 13.3,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+
+          // --- Line 2 (Missing only) ---
+          if (!complete) ...[
+            const SizedBox(height: 2),
+            Text(
+              'See full ingredients below',
+              style: GoogleFonts.dmSans(
+                color: Colors.white.withOpacity(0.9),
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                height: 1.2,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 
   // fallback image widget uses the uploaded local path as requested
   Widget _fallbackImageWidget() {
@@ -508,10 +606,7 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
     required Color textColor,
   }) {
     return Container(
-      width: 70,
-      height: 24,
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3.8),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(12),
@@ -520,12 +615,10 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
       child: Text(
         label,
         style: GoogleFonts.dmSans(
-          fontSize: 10,
+          fontSize: 11,
           fontWeight: FontWeight.w600,
           color: textColor,
         ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
       ),
     );
   }
@@ -536,20 +629,20 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
     required String label,
   }) {
     return Container(
-      width: 90,
+      width: 80,
       child: Column(
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
               border: Border.all(color: const Color(0xFF659689).withOpacity(0.30), width: 1.5),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
               child: Container(
-                width: 40,
-                height: 40,
+                width: 55,
+                height: 55,
                 decoration: BoxDecoration(
                   color: const Color(0xFFC2EBD2),
                   shape: BoxShape.circle,
@@ -561,16 +654,23 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Text(label, style: GoogleFonts.dmSans(fontSize: 13)),
+          Text(
+            label,
+            style: GoogleFonts.dmSans(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.4,
+              ),
+            ),
         ],
       ),
     );
   }
 
   Widget _iconForAsset(String assetPath, IconData fallback) {
-    // try loading asset; if not present, fallback to icon
+    //try loading asset; if not present, fallback to icon
     try {
-      return Image.asset(assetPath, width: 20, height: 20, errorBuilder: (_, __, ___) {
+      return Image.asset(assetPath, width: 30, height: 30, color: const Color(0xFF416F64), errorBuilder: (_, __, ___) {
         return Icon(fallback, color: const Color(0xFF416F64));
       });
     } catch (_) {
@@ -578,20 +678,108 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
     }
   }
 
+  //helpers for ingredients
+  String _formatUnit(String unitName, num convertedQty) {
+    if (unitName.isEmpty) return "";
+
+    if (convertedQty <= 1) return unitName;
+
+    if (unitName.endsWith("s")) return unitName;
+
+    return "${unitName}s";
+  }
+
+  
+
+  Widget _ingredientItem(Map<String, dynamic> item) {
+    final qty = item['quantity_q'] ?? 0;
+    final ingr = item['ingredients'];
+    final unit = item['ingredient_units'];
+
+    final name = ingr?['name']?.toString() ?? "";
+    final prepared = item['prepared_type']?.toString().trim();
+    final unitName = unit?['unit_name']?.toString() ?? "";
+    final conversion = unit?['conversion'] == null
+        ? 1.0
+        : double.tryParse(unit['conversion'].toString()) ?? 1.0;
+
+    // Detect fractional units such as "1/2 cup", "1/4 kilo", "½ cup"
+    final bool isFractionUnit =
+        unitName.contains('/') || unitName.contains('½') || unitName.contains('¼') || unitName.contains('¾');
+
+    String displayText;
+
+    if (isFractionUnit) {
+      // ---- Fraction units: ignore numeric conversion ----
+      displayText = "$unitName $name";
+    } else {
+      // ---- Normal numeric units ----
+      final value = qty * conversion;
+      final qtyText = (value % 1 == 0) ? value.toInt().toString() : value.toString();
+      final unitText = _formatUnit(unitName, value);
+
+      displayText = "$qtyText $unitText $name";
+    }
+
+    if (prepared != null && prepared.isNotEmpty) {
+      displayText += ", $prepared";
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              "•",
+              style: TextStyle(
+                color: Color(0xFFF06644),
+                fontSize: 20,
+                height: 1,
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              displayText,
+              style: GoogleFonts.dmSans(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                letterSpacing: -0.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+
   List<Widget> _buildProcedureList(dynamic rawProcedures) {
     if (rawProcedures is List) {
       return List.generate(
         rawProcedures.length,
         (i) => Padding(
-          padding: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.only(bottom: 12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("${i + 1}.  ", style: GoogleFonts.dmSans()),
+              Text(
+                "${i + 1}.",
+                style: GoogleFonts.dmSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   rawProcedures[i].toString(),
-                  style: GoogleFonts.dmSans(),
                 ),
               ),
             ],
@@ -599,11 +787,7 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
         ),
       );
     }
-    return [
-      Text(
-        rawProcedures?.toString() ?? "No procedures",
-        style: GoogleFonts.dmSans(),
-      )
-    ];
+
+    return [Text(rawProcedures.toString())];
   }
 }
