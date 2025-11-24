@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class RecipePreviewCard extends StatelessWidget {
-  const RecipePreviewCard({super.key});
+class SavedRecipeCard extends StatelessWidget {
+  const SavedRecipeCard ({super.key});
 
   @override
   Widget build(BuildContext context) {

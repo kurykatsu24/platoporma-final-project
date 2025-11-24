@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:confetti/confetti.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -34,6 +36,11 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
   bool _loading = true;
   String? _error;
 
+  //for save button logic
+  bool isSaved = false;
+  bool showSaveSnackbar = false;
+
+
   //fallback local image (from uploaded file). Use this exact path as requested.
   final String localFallbackImage = 'file:///mnt/data/c5eb7309-968a-46d0-b496-5cada022ae3f.png';
 
@@ -41,8 +48,18 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
   void initState() {
     super.initState();
     _fetchRecipeByName();
+    _confettiController = ConfettiController(duration: const Duration(milliseconds: 500));
   }
 
+  late ConfettiController _confettiController;
+  final GlobalKey saveButtonKey = GlobalKey();
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
+  
   Future<void> _fetchRecipeByName() async {
     setState(() {
       _loading = true;
@@ -235,23 +252,64 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                                           ),
                                         ),
 
-                                        //top-right save button
+                                        //top-right save button (with animation logic)
                                         Positioned(
                                           top: 14,
                                           right: 14,
                                           child: _circleIconButton(
                                             child: SizedBox(
+                                              key: saveButtonKey,
                                               width: 44,
                                               height: 44,
                                               child: IconButton(
                                                 padding: EdgeInsets.zero,
                                                 iconSize: 22,
-                                                icon: Image.asset(
-                                                  'assets/icon_images/saved_inactive.png',
-                                                  width: 23,
-                                                  height: 23,
+                                                onPressed: () {
+                                                  _showBubbleBurst(); // <<< NEW (Twitter-style burst)
+
+                                                  setState(() {
+                                                    isSaved = true;
+                                                    showSaveSnackbar = true;
+                                                  });
+
+                                                  Future.delayed(const Duration(seconds: 5), () {
+                                                    if (mounted) {
+                                                      setState(() => showSaveSnackbar = false);
+                                                    }
+                                                  });
+                                                },
+                                                icon: TweenAnimationBuilder(
+                                                  duration: const Duration(milliseconds: 220),
+                                                  tween: Tween<double>(begin: 1.0, end: isSaved ? 1.25 : 1.0),
+                                                  curve: Curves.easeOutBack,
+                                                  builder: (context, scale, child) {
+                                                    return Transform.scale(
+                                                      scale: scale,
+                                                      child: Container(
+                                                        width: 44,
+                                                        height: 44,
+                                                        decoration: BoxDecoration(
+                                                          color: isSaved ? const Color(0xFFF06644) : Colors.white,
+                                                          shape: BoxShape.circle,
+                                                          border: Border.all(
+                                                            color: isSaved ? Colors.white : Colors.transparent,
+                                                            width: 2,
+                                                          ),
+                                                        ),
+                                                        child: Center(
+                                                          child: Image.asset(
+                                                            isSaved
+                                                                ? 'assets/icon_images/saved_active.png'
+                                                                : 'assets/icon_images/saved_inactive.png',
+                                                            width: 23,
+                                                            height: 23,
+                                                            color: isSaved ? Colors.white : null,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
                                                 ),
-                                                onPressed: () {},
                                               ),
                                             ),
                                           ),
@@ -511,6 +569,68 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                         ),
                       ),
           ),
+        
+        //<------ Custom Snackbar after saving ----->
+        if (showSaveSnackbar)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 20,
+            child: GestureDetector(
+              onTap: () {
+                // Example navigation - adjust to your page
+                Navigator.pushNamed(context, "/savedRecipes");
+              },
+              child: Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(13),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                    child: Container(
+                      width: 285,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 20,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF06644).withOpacity(0.85),
+                        borderRadius: BorderRadius.circular(13),
+                        border: Border.all(
+                          color: const Color(0xFFF06644),
+                          width: 1.8,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            "Recipe has been Saved!",
+                            style: GoogleFonts.dmSans(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                              letterSpacing: -1,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Click to view saved recipes",
+                            style: GoogleFonts.dmSans(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                              letterSpacing: -1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
         ],
       ),
     );
@@ -786,5 +906,105 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
     }
 
     return [Text(rawProcedures.toString())];
+  }
+
+  void _showBubbleBurst() {
+    final RenderBox? box = saveButtonKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return;
+
+    final Offset center = box.localToGlobal(
+      Offset(box.size.width / 2, box.size.height / 2),
+    );
+
+    final OverlayState overlay = Overlay.of(context);
+    late OverlayEntry entry;
+
+    entry = OverlayEntry(
+      builder: (_) => BubbleBurstOverlay(
+        center: center,
+        onComplete: () => entry.remove(),
+      ),
+    );
+
+    overlay.insert(entry);
+  }
+}
+
+class BubbleBurstOverlay extends StatefulWidget {
+  final Offset center;
+  final VoidCallback onComplete;
+
+  const BubbleBurstOverlay({super.key, required this.center, required this.onComplete});
+
+  @override
+  State<BubbleBurstOverlay> createState() => _BubbleBurstOverlayState();
+}
+
+class _BubbleBurstOverlayState extends State<BubbleBurstOverlay>
+    with SingleTickerProviderStateMixin {
+  late AnimationController controller;
+  late Animation<double> radiusAnim;
+  late Animation<double> opacityAnim;
+
+  final int bubbleCount = 12;
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+
+    radiusAnim = Tween<double>(begin: 0, end: 40).animate(
+      CurvedAnimation(parent: controller, curve: Curves.easeOut),
+    );
+
+    opacityAnim = Tween<double>(begin: 1, end: 0).animate(
+      CurvedAnimation(parent: controller, curve: Curves.easeIn),
+    );
+
+    controller.forward().then((_) => widget.onComplete());
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: controller,
+        builder: (_, __) {
+          return Stack(
+            children: List.generate(bubbleCount, (i) {
+              final angle = (i / bubbleCount) * 6.283; // 360 rad
+              final dx = cos(angle) * radiusAnim.value;
+              final dy = sin(angle) * radiusAnim.value;
+
+              return Positioned(
+                left: widget.center.dx + dx,
+                top: widget.center.dy + dy,
+                child: Opacity(
+                  opacity: opacityAnim.value,
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF06644),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              );
+            }),
+          );
+        },
+      ),
+    );
   }
 }

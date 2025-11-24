@@ -127,27 +127,27 @@ class _SavedSectionState extends State<SavedSection> {
                   SizedBox(height: 8),
 
                   //The actual saved recipe card (placeholder for now)
-                  RecipePreviewCard(),
+                  SavedRecipeCard(),
 
                   SizedBox(height: 20),
 
-                  RecipePreviewCard(),
+                  SavedRecipeCard(),
 
                   SizedBox(height: 20),
 
-                  RecipePreviewCard(),
+                  SavedRecipeCard(),
 
                   SizedBox(height: 20),
 
-                  RecipePreviewCard(),
+                  SavedRecipeCard(),
 
                   SizedBox(height: 20),
 
-                  RecipePreviewCard(),
+                  SavedRecipeCard(),
 
                   SizedBox(height: 20),
 
-                  RecipePreviewCard(),
+                  SavedRecipeCard(),
 
                   SizedBox(height: 40), // extra bottom padding
                 ],
@@ -180,7 +180,7 @@ class _SavedSectionState extends State<SavedSection> {
 
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
               color: isActive ? activeColor.withOpacity(0.2) : inactiveBG,
               borderRadius: BorderRadius.circular(16),
@@ -194,7 +194,7 @@ class _SavedSectionState extends State<SavedSection> {
                 label.toUpperCase(),
                 style: GoogleFonts.dmSans(
                   fontWeight: isActive ? FontWeight.w900 : FontWeight.w600,
-                  fontSize: 15,
+                  fontSize: 13,
                   letterSpacing: -1,
                   color: isActive ? activeColor : Colors.black.withOpacity(0.6),
                 ),
