@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class SavedSection extends StatelessWidget {
+class SavedSection extends StatefulWidget {
   const SavedSection({super.key});
+
+  @override
+  State<SavedSection> createState() => _SavedSectionState();
+}
+
+class _SavedSectionState extends State<SavedSection> {
+  String selected = "recent"; // pill state
 
   @override
   Widget build(BuildContext context) {
     final screenW = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFDFFEC),
 
@@ -39,20 +47,18 @@ class SavedSection extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        //<---- Title with icons ---->
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            // Left icon
                             Image.asset(
                               'assets/images/fork_icon.png',
                               width: screenW * 0.18,
                               height: screenW * 0.18,
                               fit: BoxFit.contain,
                             ),
-
                             const SizedBox(width: 1),
-
                             Text(
                               "Saved Recipes",
                               style: const TextStyle(
@@ -63,10 +69,7 @@ class SavedSection extends StatelessWidget {
                                 letterSpacing: -0.4,
                               ),
                             ),
-
                             const SizedBox(width: 1),
-
-                            // Right icon
                             Image.asset(
                               'assets/images/spoon_icon.png',
                               width: screenW * 0.18,
@@ -99,7 +102,21 @@ class SavedSection extends StatelessWidget {
             ),
           ),
 
-          // ------------- Body Placeholder -------------
+          //<---- Pills Row ---->
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 25),
+              child: Row(
+                children: [
+                  _buildPill("recent"),
+                  const SizedBox(width: 12),
+                  _buildPill("all"),
+                ],
+              ),
+            ),
+          ),
+
+          //<----------- Body Placeholder ------------->
           SliverFillRemaining(
             hasScrollBody: false,
             child: Center(
@@ -114,6 +131,53 @@ class SavedSection extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  //<------- UI Helpers ------->
+
+  //ui helper for a single pill (as pills for RECENT and ALL)
+  Widget _buildPill(String label) {
+    const activeColor = Color(0xFFF06644);
+    const inactiveBG = Color(0xFFECECEC);
+    bool isActive = selected == label;
+
+    return Expanded(
+      child: Material(
+        color: Colors.transparent, // keep background from AnimatedContainer
+        borderRadius: BorderRadius.circular(30),
+        //animation logic for switching pills
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          splashColor: activeColor.withOpacity(0.15),
+          highlightColor: activeColor.withOpacity(0.1),
+          onTap: () => setState(() => selected = label),
+
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: isActive ? activeColor.withOpacity(0.2) : inactiveBG,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isActive ? activeColor : Colors.black.withOpacity(0.6),
+                width: isActive ? 2.3 : 1.5,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                label.toUpperCase(),
+                style: GoogleFonts.dmSans(
+                  fontWeight: isActive ? FontWeight.w900 : FontWeight.w600,
+                  fontSize: 15,
+                  letterSpacing: -1,
+                  color: isActive ? activeColor : Colors.black.withOpacity(0.6),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
