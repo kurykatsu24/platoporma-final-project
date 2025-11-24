@@ -19,6 +19,8 @@ Future<List<RecipeCard>> fetchRecipes() async {
 
   return list.map((json) {
     return RecipeCard(
+      recipeId: json['id'], 
+      recipeJson: json,
       recipeName: json['name'] ?? '',
       cuisineType: json['cuisine_type'],
       dietType: json['diet_type'],
@@ -31,6 +33,8 @@ Future<List<RecipeCard>> fetchRecipes() async {
 
 class RecipeCard extends StatelessWidget {
   final VoidCallback? onTap;
+  final String recipeId;                 // <--- new
+  final Map<String, dynamic> recipeJson;
   final String recipeName;
   final String? cuisineType;
   final String? dietType;
@@ -40,6 +44,8 @@ class RecipeCard extends StatelessWidget {
   
   const RecipeCard({
     super.key,
+    required this.recipeId,               // <--- new
+    required this.recipeJson,  
     required this.recipeName,
     this.cuisineType,
     this.dietType,
