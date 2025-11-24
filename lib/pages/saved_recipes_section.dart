@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:platoporma/widgets/recipes/saved_recipe_card.dart';
 
 class SavedSection extends StatefulWidget {
   const SavedSection({super.key});
@@ -116,17 +117,40 @@ class _SavedSectionState extends State<SavedSection> {
             ),
           ),
 
-          //<----------- Body Placeholder ------------->
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Center(
-              child: Text(
-                "No saved recipes yet",
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF6E6E6E),
-                ),
+          //<----------- Saved Recipes List ------------->      
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: const [
+
+                  SizedBox(height: 8),
+
+                  //The actual saved recipe card (placeholder for now)
+                  SavedRecipeCard(),
+
+                  SizedBox(height: 20),
+
+                  SavedRecipeCard(),
+
+                  SizedBox(height: 20),
+
+                  SavedRecipeCard(),
+
+                  SizedBox(height: 20),
+
+                  SavedRecipeCard(),
+
+                  SizedBox(height: 20),
+
+                  SavedRecipeCard(),
+
+                  SizedBox(height: 20),
+
+                  SavedRecipeCard(),
+
+                  SizedBox(height: 40), // extra bottom padding
+                ],
               ),
             ),
           ),
@@ -156,7 +180,7 @@ class _SavedSectionState extends State<SavedSection> {
 
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
               color: isActive ? activeColor.withOpacity(0.2) : inactiveBG,
               borderRadius: BorderRadius.circular(16),
@@ -170,7 +194,7 @@ class _SavedSectionState extends State<SavedSection> {
                 label.toUpperCase(),
                 style: GoogleFonts.dmSans(
                   fontWeight: isActive ? FontWeight.w900 : FontWeight.w600,
-                  fontSize: 15,
+                  fontSize: 13,
                   letterSpacing: -1,
                   color: isActive ? activeColor : Colors.black.withOpacity(0.6),
                 ),

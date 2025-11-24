@@ -1,8 +1,11 @@
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:confetti/confetti.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:platoporma/pages/mainpage_section.dart';
+import 'package:platoporma/helpers/bubble_burst_helper.dart';
 
 class RecipeMainScreen extends StatefulWidget {
   final String recipeName;
@@ -34,6 +37,13 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
   bool _loading = true;
   String? _error;
 
+  //for save button logic
+  bool isSaved = false;
+  bool showSaveSnackbar = false;
+
+  double snackbarOffset = 1.0; // 1 = hidden (below screen), 0 = visible
+
+
   //fallback local image (from uploaded file). Use this exact path as requested.
   final String localFallbackImage = 'file:///mnt/data/c5eb7309-968a-46d0-b496-5cada022ae3f.png';
 
@@ -41,8 +51,18 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
   void initState() {
     super.initState();
     _fetchRecipeByName();
+    _confettiController = ConfettiController(duration: const Duration(milliseconds: 500));
   }
 
+  late ConfettiController _confettiController;
+  final GlobalKey saveButtonKey = GlobalKey();
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
+  
   Future<void> _fetchRecipeByName() async {
     setState(() {
       _loading = true;
@@ -235,23 +255,76 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                                           ),
                                         ),
 
-                                        //top-right save button
+                                        //top-right save button (with animation logic)
                                         Positioned(
                                           top: 14,
                                           right: 14,
                                           child: _circleIconButton(
                                             child: SizedBox(
+                                              key: saveButtonKey,
                                               width: 44,
                                               height: 44,
                                               child: IconButton(
                                                 padding: EdgeInsets.zero,
                                                 iconSize: 22,
-                                                icon: Image.asset(
-                                                  'assets/icon_images/saved_inactive.png',
-                                                  width: 23,
-                                                  height: 23,
+                                                onPressed: () {
+                                                  showBubbleBurst(
+                                                    context: context,
+                                                    key: saveButtonKey,
+                                                    offset: const Offset(-4, -3),
+                                                  ); // <<< NEW (Twitter-style burst)
+
+                                                  setState(() {
+                                                    isSaved = true;
+                                                    showSaveSnackbar = true;
+                                                    snackbarOffset = 0.0; // slide UP
+                                                  });
+
+                                                  Future.delayed(const Duration(seconds: 5), () {
+                                                    if (mounted) {
+                                                      setState(() {
+                                                        snackbarOffset = 1.0; // slide DOWN
+                                                      });
+
+                                                      // Wait for animation to finish before hiding widget
+                                                      Future.delayed(const Duration(milliseconds: 300), () {
+                                                        if (mounted) setState(() => showSaveSnackbar = false);
+                                                      });
+                                                    }
+                                                  });                                                  
+                                                },
+                                                icon: TweenAnimationBuilder(
+                                                  duration: const Duration(milliseconds: 500),
+                                                  tween: Tween<double>(begin: 0.3, end: isSaved ? 1.15 : 1.0),
+                                                  curve: Curves.easeOutBack,
+                                                  builder: (context, scale, child) {
+                                                    return Transform.scale(
+                                                      scale: scale,
+                                                      child: Container(
+                                                        width: 44,
+                                                        height: 44,
+                                                        decoration: BoxDecoration(
+                                                          color: isSaved ? const Color(0xFFF06644) : Colors.white,
+                                                          shape: BoxShape.circle,
+                                                          border: Border.all(
+                                                            color: isSaved ? Colors.white : Colors.transparent,
+                                                            width: 2,
+                                                          ),
+                                                        ),
+                                                        child: Center(
+                                                          child: Image.asset(
+                                                            isSaved
+                                                                ? 'assets/icon_images/saved_active.png'
+                                                                : 'assets/icon_images/saved_inactive.png',
+                                                            width: 23,
+                                                            height: 23,
+                                                            color: isSaved ? Colors.white : null,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
                                                 ),
-                                                onPressed: () {},
                                               ),
                                             ),
                                           ),
@@ -511,6 +584,73 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                         ),
                       ),
           ),
+        
+        //<------ Custom Snackbar after saving ----->
+        if (showSaveSnackbar)
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 20,
+            child: AnimatedSlide(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              offset: Offset(0, snackbarOffset), 
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 250),
+                opacity: snackbarOffset == 0 ? 1 : 0,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const MainPageSection(initialIndex: 2)),
+                    );
+                  },
+                  child: Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),      
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 11.5,
+                            horizontal: 20,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF06644),
+                            borderRadius: BorderRadius.circular(13),                            
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                "Recipe has been Saved!",
+                                style: GoogleFonts.dmSans(
+                                  fontSize: 16.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                  letterSpacing: -0.4,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                "Click to view saved recipes",
+                                style: GoogleFonts.dmSans(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                  letterSpacing: -0.4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          
+
         ],
       ),
     );
