@@ -152,7 +152,7 @@ class RecipeCard extends StatelessWidget {
             // FOOTER
             Center(
               child: Text(
-                "<<View Full Recipe>>",
+                "<< View Full Recipe >>",
                 style: GoogleFonts.dmSans(
                   fontSize: 8,
                   fontWeight: FontWeight.w600,

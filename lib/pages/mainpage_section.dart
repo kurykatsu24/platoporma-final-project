@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../widgets/animated_navbar.dart';
 import 'package:platoporma/pages/homepage_section.dart';
 import 'package:platoporma/pages/search_section.dart';
-import 'package:platoporma/pages/saved_section.dart';
+import 'package:platoporma/pages/saved_recipes_section.dart';
 import 'package:platoporma/pages/profile_section.dart';
 
 class MainPageSection extends StatefulWidget {
