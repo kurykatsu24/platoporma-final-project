@@ -39,6 +39,17 @@ class _HomePageSectionState extends State<HomePageSection> {
     }
   }
 
+  Future<Map<String, dynamic>> fetchRecipeJson(String id) async {
+    final res = await Supabase.instance.client
+        .from('recipes')
+        .select()
+        .eq('id', id)
+        .single();
+
+    return res;
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -192,6 +203,8 @@ class _HomePageSectionState extends State<HomePageSection> {
                       itemBuilder: (context, index) {
                         final recipe = recipes[index];
                         return RecipeCard(
+                          recipeId: recipe.recipeId,
+                          recipeJson: recipe.recipeJson,
                           recipeName: recipe.recipeName,
                           imagePath: recipe.imagePath,
                           estimatedPriceCentavos: recipe.estimatedPriceCentavos,
@@ -203,6 +216,8 @@ class _HomePageSectionState extends State<HomePageSection> {
                               context,
                               MaterialPageRoute(
                                 builder: (_) => RecipeMainScreen(
+                                  recipeId: recipe.recipeId,       // <--- pass the id
+                                  recipeJson: recipe.recipeJson,
                                   recipeName: recipe.recipeName,
                                   isIngredientSearch: false,
                                   isComplete: false,

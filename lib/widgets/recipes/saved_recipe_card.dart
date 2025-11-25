@@ -1,13 +1,43 @@
-// lib/widgets/recipe_preview_card.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SavedRecipeCard extends StatelessWidget {
-  const SavedRecipeCard ({super.key});
+  final String saveId;
+  final String recipeId;
+  final Map<String, dynamic> recipeJson;
+  final VoidCallback onDelete;
+
+  const SavedRecipeCard({
+    super.key,
+    required this.saveId,
+    required this.recipeId,
+    required this.recipeJson,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final name = recipeJson["name"] ?? "Untitled Recipe";
+    final price = recipeJson["estimated_price"] ?? 0;
+    final cuisine = recipeJson["cuisine_type"];
+    final diet = recipeJson["diet_type"];
+    final protein = recipeJson["protein_type"];
+
+    return GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    onTap: () {
+      Navigator.pushNamed(
+        context,
+        '/saved-recipe',
+        arguments: {
+          'recipeId': recipeId,
+          'recipeName': name,
+          'saveId': saveId,
+          'recipeJson': recipeJson,
+        },
+      );
+    },
+    child: Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -25,17 +55,19 @@ class SavedRecipeCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          //<------- Recipe name + Pills + Price ------->
+          //<------ Recipe name + Pills + Price ------->  
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+
+              //<----- On the leftside: Name + Pills ----->  
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    //placeholder for now
+                    //The Recipe Name  
                     Text(
-                      "Sample Recipe Name",
+                      name,
                       style: GoogleFonts.dmSans(
                         fontSize: 25,
                         fontWeight: FontWeight.w800,
@@ -49,28 +81,19 @@ class SavedRecipeCard extends StatelessWidget {
 
                     const SizedBox(height: 12),
 
+                    // Pills  
                     Wrap(
                       spacing: 6,
                       runSpacing: 6,
                       children: [
-                        _pill(
-                          label: "Filipino",
-                          bgColor: const Color(0xFFD6FFFF),
-                          outlineColor: const Color(0xFF0B9999),
-                          textColor: const Color(0xFF0B9999),
-                        ),
-                        _pill(
-                          label: "Keto",
-                          bgColor: const Color(0xFFFFFACD),
-                          outlineColor: const Color(0xFFCD901F),
-                          textColor: const Color(0xFFCD901F),
-                        ),
-                        _pill(
-                          label: "Chicken",
-                          bgColor: const Color(0xFFFFD0E5),
-                          outlineColor: const Color(0xFFC73576),
-                          textColor: const Color(0xFFC73576),
-                        ),
+                        if (cuisine != null && cuisine.toString().isNotEmpty)
+                          _pillCuisine(cuisine),
+
+                        if (diet != null && diet.toString().isNotEmpty)
+                          _pillDiet(diet),
+
+                        if (protein != null && protein.toString().isNotEmpty)
+                          _pillProtein(protein),
                       ],
                     ),
                   ],
@@ -79,9 +102,9 @@ class SavedRecipeCard extends StatelessWidget {
 
               const SizedBox(width: 13),
 
+              //<------- Estimated Price Box ------->  
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 17, vertical: 11),
+                padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 11),
                 decoration: BoxDecoration(
                   color: const Color(0xFFE2FCEC),
                   borderRadius: BorderRadius.circular(12),
@@ -102,7 +125,7 @@ class SavedRecipeCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      "₱120.00",
+                      "₱${price.toStringAsFixed(2)}",
                       style: GoogleFonts.dmSans(
                         fontSize: 19,
                         fontWeight: FontWeight.w900,
@@ -119,12 +142,9 @@ class SavedRecipeCard extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          //In a row: subtext view full recipe and delete (trash icon)
-
+          //<------ View Recipe + Delete Row ------>  
           Row(
             children: [
-
-              //empty space (for balance to the delete icon)
               const Expanded(child: SizedBox()),
 
               Text(
@@ -142,9 +162,7 @@ class SavedRecipeCard extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
-                    onTap: () {
-                      // later delete logic
-                    },
+                    onTap: onDelete,
                     child: Image.asset(
                       'assets/icon_images/delete.png',
                       height: 20,
@@ -157,9 +175,9 @@ class SavedRecipeCard extends StatelessWidget {
           )
         ],
       ),
-    );
+    ),
+  );
   }
-
   //<---- Pill Widget Helper ------>
   static Widget _pill({
     required String label,
@@ -182,6 +200,35 @@ class SavedRecipeCard extends StatelessWidget {
           color: textColor,
         ),
       ),
+    );
+  }
+
+  //Color themes assigned:
+  //Cuisine pill theme
+  static Widget _pillCuisine(String label) {
+    return _pill(
+      label: label,
+      bgColor: const Color(0xFFD6FFFF),
+      outlineColor: const Color(0xFF0B9999),
+      textColor: const Color(0xFF0B9999),
+    );
+  }
+  // Diet pill theme
+  static Widget _pillDiet(String label) {
+    return _pill(
+      label: label,
+      bgColor: const Color(0xFFFFFACD),
+      outlineColor: const Color(0xFFCD901F),
+      textColor: const Color(0xFFCD901F),
+    );
+  }
+  // Protein pill theme
+  static Widget _pillProtein(String label) {
+    return _pill(
+      label: label,
+      bgColor: const Color(0xFFFFD0E5),
+      outlineColor: const Color(0xFFC73576),
+      textColor: const Color(0xFFC73576),
     );
   }
 }

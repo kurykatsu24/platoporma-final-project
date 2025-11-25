@@ -18,6 +18,7 @@ const Color flagMissing = Color(0xFFFC4D4D); //for missing
 //We fetch recipe fields and compute `matchedIngredientCount`.
 class RecipeResult {
   final String id;
+  final Map<String, dynamic> recipeJson;
   final String name;
   final String? cuisineType;
   final String? dietType;
@@ -31,6 +32,7 @@ class RecipeResult {
 
   RecipeResult({
     required this.id,
+    required this.recipeJson, 
     required this.name,
     this.cuisineType,
     this.dietType,
@@ -209,6 +211,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
     final res = combined.map((json) {
       return RecipeResult(
         id: json['id']?.toString() ?? '',
+        recipeJson: json,
         name: json['name'] ?? '',
         cuisineType: json['cuisine_type'],
         dietType: json['diet_type'],
@@ -324,6 +327,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
         results.add(
           RecipeResult(
             id: recipeId,
+            recipeJson: r,
             name: r['name'] ?? '',
             cuisineType: r['cuisine_type'],
             dietType: r['diet_type'],
@@ -349,6 +353,16 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<Map<String, dynamic>> fetchRecipeJson(String id) async {
+    final res = await Supabase.instance.client
+        .from('recipes')
+        .select()
+        .eq('id', id)
+        .single();
+
+    return res;
   }
 
   // ---------- UI helpers ----------
@@ -420,7 +434,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
         ),
       ),
     );
-  }
+  } 
 
   Widget _buildResultsFor(String query) {
     final bool exact = _hasExactMatch(query);
@@ -578,17 +592,22 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
             children: [
               // underlying card
               RecipeCard(
+                recipeId: item.id,
+                recipeJson: item.recipeJson,
                 recipeName: item.name,
                 cuisineType: item.cuisineType,
                 dietType: item.dietType,
                 proteinType: item.proteinType,
                 estimatedPriceCentavos: item.estimatedPriceCentavos,
                 imagePath: item.imagePath,
-                onTap: () {
+                onTap: () async {
+                  final fullJson = await fetchRecipeJson(item.id);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => RecipeMainScreen(
+                        recipeId: item.id,                      
+                        recipeJson: fullJson,
                         recipeName: item.name,
                         isIngredientSearch: _isIngredientSearch,
                         isComplete: item.isCompleteIngredients,
