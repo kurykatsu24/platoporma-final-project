@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:platoporma/widgets/bubble_burst_overlay.dart';
 
-/// Triggers a bubble burst animation at the center of a widget identified by [key].
+//triggers a bubble burst animation at the center of a widget identified by [key].
 void showBubbleBurst({
   required BuildContext context,
   required GlobalKey key,
@@ -12,7 +12,7 @@ void showBubbleBurst({
 
   final Offset center = box.localToGlobal(
     Offset(box.size.width / 2, box.size.height / 2),
-  ) + offset; // allow fine-tuning per button
+  ) + offset; 
 
   final OverlayState overlay = Overlay.of(context);
   late OverlayEntry entry;

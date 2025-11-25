@@ -23,7 +23,21 @@ class SavedRecipeCard extends StatelessWidget {
     final diet = recipeJson["diet_type"];
     final protein = recipeJson["protein_type"];
 
-    return Container(
+    return GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    onTap: () {
+      Navigator.pushNamed(
+        context,
+        '/saved-recipe',
+        arguments: {
+          'recipeId': recipeId,
+          'recipeName': name,
+          'saveId': saveId,
+          'recipeJson': recipeJson,
+        },
+      );
+    },
+    child: Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -41,16 +55,17 @@ class SavedRecipeCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          //<------ Recipe name + Pills + Price ------->
+          //<------ Recipe name + Pills + Price ------->  
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              //<----- On the leftside: Name + Pills ----->
+
+              //<----- On the leftside: Name + Pills ----->  
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    //The Recipe Name
+                    //The Recipe Name  
                     Text(
                       name,
                       style: GoogleFonts.dmSans(
@@ -66,7 +81,7 @@ class SavedRecipeCard extends StatelessWidget {
 
                     const SizedBox(height: 12),
 
-                    // Pills: cuisine, diet, protein (could be either two from diet and protein can show or both)
+                    // Pills  
                     Wrap(
                       spacing: 6,
                       runSpacing: 6,
@@ -87,7 +102,7 @@ class SavedRecipeCard extends StatelessWidget {
 
               const SizedBox(width: 13),
 
-              //<------- On the right side: Estimated Price Box ------->
+              //<------- Estimated Price Box ------->  
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 11),
                 decoration: BoxDecoration(
@@ -127,35 +142,20 @@ class SavedRecipeCard extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          //In a row: subtext view full recipe and delete (trash icon)
+          //<------ View Recipe + Delete Row ------>  
           Row(
             children: [
-              // empty space (for balance to the delete icon)
               const Expanded(child: SizedBox()),
 
-              GestureDetector(
-                onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    "/recipe",
-                    arguments: {
-                      "recipeId": recipeId,
-                      "saved": true,
-                      "saveId": saveId,
-                      "recipeJson": recipeJson,
-                    },
-                  );
-                },
-                child: Text(
-                  "<<View Full Recipe>>",
-                  style: GoogleFonts.dmSans(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black.withOpacity(0.50),
-                    letterSpacing: -0.4,
-                  ),
-                  textAlign: TextAlign.center,
+              Text(
+                "<<View Full Recipe>>",
+                style: GoogleFonts.dmSans(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black.withOpacity(0.50),
+                  letterSpacing: -0.4,
                 ),
+                textAlign: TextAlign.center,
               ),
 
               Expanded(
@@ -175,7 +175,8 @@ class SavedRecipeCard extends StatelessWidget {
           )
         ],
       ),
-    );
+    ),
+  );
   }
   //<---- Pill Widget Helper ------>
   static Widget _pill({

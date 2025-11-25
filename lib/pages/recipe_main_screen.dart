@@ -16,6 +16,7 @@ class RecipeMainScreen extends StatefulWidget {
   final int selectedCount;
   final String recipeId;
   final Map<String, dynamic> recipeJson;
+  final bool fromSaved;
   
 
 
@@ -29,6 +30,7 @@ class RecipeMainScreen extends StatefulWidget {
     required this.missingCount,
     required this.matchedCount,
     required this.selectedCount,
+    this.fromSaved = false,
   });
 
   @override
@@ -53,17 +55,38 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
 
   double snackbarOffset = 1.0; // 1 = hidden (below screen), 0 = visible
 
+  // dynamic snackbar content (for duplicates vs normal save)
+  String _snackbarTitle = "Recipe has been Saved!";
+  String _snackbarSubtitle = "Click to view saved recipes";
+  Color _snackbarColor = const Color(0xFFF06644);
+
+
 
   //fallback local image (from uploaded file). Use this exact path as requested.
   final String localFallbackImage = 'file:///mnt/data/c5eb7309-968a-46d0-b496-5cada022ae3f.png';
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchRecipeByName();
-     _checkIfSaved();
-    _confettiController = ConfettiController(duration: const Duration(milliseconds: 500));
-  }
+    @override
+    void initState() {
+      super.initState();
+
+      // If opening from a saved copy, use the provided JSON and skip fetch.
+      if (widget.fromSaved) {
+        recipe = Map<String, dynamic>.from(widget.recipeJson);
+        _loading = false;
+        // Make sure widget.recipeJson contains id; if not, you can set it:
+        if (recipe?['id'] == null && widget.recipeId.isNotEmpty) {
+          recipe?['id'] = widget.recipeId;
+        }
+        // still check if saved to keep UI consistent (will set isSaved etc.)
+        _checkIfSaved();
+      } else {
+        // normal flow: fetch live recipe data from recipes table
+        _fetchRecipeByName();
+        _checkIfSaved();
+      }
+
+      _confettiController = ConfettiController(duration: const Duration(milliseconds: 500));
+    }
 
   late ConfettiController _confettiController;
   final GlobalKey saveButtonKey = GlobalKey();
@@ -214,35 +237,16 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
       isSaved = true;    // <-- this triggers the UI scale animation
     });
 
+    // Insert
+    await Supabase.instance.client.from('saved_recipes').insert({
+      "user_id": user.id,
+      "recipe_id": recipe?['id'] ?? widget.recipeId,
+      "initial_recipe_json": widget.recipeJson,
+    });
 
-    // If duplicate
-    if (isAlreadySaved) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: const Color(0xFFF06644),
-          content: const Text("Already saved — tap to view"),
-          action: SnackBarAction(
-            textColor: Colors.white,
-            label: "View",
-            onPressed: () {
-              Navigator.pushNamed(context, "/savedRecipes");
-            },
-          ),
-        ),
-      );
-      return;
-    }
+    setState(() => isAlreadySaved = true);
 
-  // Insert
-  await Supabase.instance.client.from('saved_recipes').insert({
-    "user_id": user.id,
-    "recipe_id": recipe?['id'] ?? widget.recipeId,
-    "initial_recipe_json": widget.recipeJson,
-  });
-
-  setState(() => isAlreadySaved = true);
-
-}
+  }
 
 
   @override
@@ -253,7 +257,7 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
     return Scaffold(  
       backgroundColor: bgColor,
 
-      // NEW: Wrap entire SafeArea + Scroll in a Stack so we can overlay the floating flag
+      //<----- Wrap entire SafeArea + Scroll in a Stack so we can overlay the floating flag ------>
       body: Stack(
         children: [
           SafeArea(
@@ -328,82 +332,110 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                                         ),
 
                                         //top-right save button (with animation logic)
-                                        Positioned(
-                                          top: 17,
-                                          right: 14,
-                                          child: _circleIconButton(
-                                            child: SizedBox(
-                                              key: saveButtonKey,
-                                              width: 44,
-                                              height: 44,
-                                              child: IconButton(
-                                                padding: EdgeInsets.zero,
-                                                iconSize: 22,
-                                                onPressed: () async {
-
-                                                  // ---- ORIGINAL ANIMATION MUST FIRE IMMEDIATELY ----
-                                                  showBubbleBurst(
-                                                    context: context,
-                                                    key: saveButtonKey,
-                                                    offset: const Offset(-4, -3),
-                                                  );
-
-                                                  setState(() {
-                                                    isSaved = true;              // <- original behavior
-                                                    showSaveSnackbar = true;     // <- show instantly
-                                                    snackbarOffset = 0.0;        // <- slide in
-                                                  });
-
-                                                  // ---- Start delayed hide like original (5s) ----
-                                                  Future.delayed(const Duration(seconds: 5), () {
-                                                    if (!mounted) return;
-                                                    setState(() => snackbarOffset = 1.0);
-
-                                                    Future.delayed(const Duration(milliseconds: 300), () {
-                                                      if (mounted) setState(() => showSaveSnackbar = false);
-                                                    });
-                                                  });
-
-                                                  // ---- Now save to database in the background ----
-                                                  // (keeps UI fast and snappy)
-                                                  await _saveRecipe();
-                                                },
-                                                icon: TweenAnimationBuilder(
-                                                  duration: const Duration(milliseconds: 500),
-                                                  tween: Tween<double>(begin: 1.0, end: isSaved ? 1.20 : 1.0),
-                                                  curve: Curves.easeOutBack,
-                                                  builder: (context, scale, child) {
-                                                    return Transform.scale(
-                                                      scale: scale,
-                                                      child: Container(
-                                                        width: 44,
-                                                        height: 44,
-                                                        decoration: BoxDecoration(
-                                                          color: isSaved ? const Color(0xFFF06644) : Colors.white,
-                                                          shape: BoxShape.circle,
-                                                          border: Border.all(
-                                                            color: isSaved ? Colors.white : Colors.transparent,
-                                                            width: 2,
-                                                          ),
-                                                        ),
-                                                        child: Center(
-                                                          child: Image.asset(
-                                                            isSaved
-                                                                ? 'assets/icon_images/saved_active.png'
-                                                                : 'assets/icon_images/saved_inactive.png',
-                                                            width: 23,
-                                                            height: 23,
-                                                            color: isSaved ? Colors.white : null,
-                                                          ),
-                                                        ),
-                                                      ),
+                                        //also hidden when opened from Saved Recipes
+                                        if (!widget.fromSaved)
+                                          Positioned(
+                                            top: 17,
+                                            right: 14,
+                                            child: _circleIconButton(
+                                              child: SizedBox(
+                                                key: saveButtonKey,
+                                                width: 44,
+                                                height: 44,
+                                                child: IconButton(
+                                                  padding: EdgeInsets.zero,
+                                                  iconSize: 22,
+                                                  onPressed: () async {
+                                                    //<--- the Bubble burst animation should fire immediately ---->
+                                                    showBubbleBurst(
+                                                      context: context,
+                                                      key: saveButtonKey,
+                                                      offset: const Offset(-4, -3),
                                                     );
+
+                                                    //<--- Duplicate checking before firing animations ----->
+                                                    if (isAlreadySaved) {
+                                                      setState(() {
+                                                        isSaved = true;
+                                                        showSaveSnackbar = true;
+                                                        snackbarOffset = 0.0;
+
+                                                        // duplicate snackbar
+                                                        _snackbarTitle = "Already saved this recipe";
+                                                        _snackbarSubtitle = "Click to view saved recipes";
+                                                        _snackbarColor = const Color(0xFFFC4D4D);
+                                                      });
+
+                                                      Future.delayed(const Duration(seconds: 5), () {
+                                                        if (!mounted) return;
+                                                        setState(() => snackbarOffset = 1.0);
+
+                                                        Future.delayed(const Duration(milliseconds: 300), () {
+                                                          if (mounted) setState(() => showSaveSnackbar = false);
+                                                        });
+                                                      });
+
+                                                      return;
+                                                    }
+
+                                                    //<--- Normal Save logic---->
+                                                    setState(() {
+                                                      isSaved = true;
+                                                      showSaveSnackbar = true;
+                                                      snackbarOffset = 0.0;
+                                                      _snackbarTitle = "Recipe has been Saved!";
+                                                      _snackbarSubtitle = "Click to view saved recipes";
+                                                      _snackbarColor = const Color(0xFFF06644);
+                                                    });
+
+                                                    Future.delayed(const Duration(seconds: 5), () {
+                                                      if (!mounted) return;
+                                                      setState(() => snackbarOffset = 1.0);
+
+                                                      Future.delayed(const Duration(milliseconds: 300), () {
+                                                        if (mounted) setState(() => showSaveSnackbar = false);
+                                                      });
+                                                    });
+
+                                                    await _saveRecipe();
                                                   },
+                                                  icon: TweenAnimationBuilder(
+                                                    duration: const Duration(milliseconds: 500),
+                                                    tween: Tween<double>(begin: 1.0, end: isSaved ? 1.20 : 1.0),
+                                                    curve: Curves.easeOutBack,
+                                                    builder: (context, scale, child) {
+                                                      return Transform.scale(
+                                                        scale: scale,
+                                                        child: Container(
+                                                          width: 44,
+                                                          height: 44,
+                                                          decoration: BoxDecoration(
+                                                            color: isSaved ? const Color(0xFFF06644) : Colors.white,
+                                                            shape: BoxShape.circle,
+                                                            border: Border.all(
+                                                              color: isSaved ? Colors.white : Colors.transparent,
+                                                              width: 2,
+                                                            ),
+                                                          ),
+                                                          child: Center(
+                                                            child: Image.asset(
+                                                              isSaved
+                                                                  ? 'assets/icon_images/saved_active.png'
+                                                                  : 'assets/icon_images/saved_inactive.png',
+                                                              width: 23,
+                                                              height: 23,
+                                                              color: isSaved ? Colors.white : null,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
                                                 ),
                                               ),
                                             ),
                                           ),
-                                        ),
+
                                       ],
                                     ),
                                   ),
@@ -690,14 +722,15 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                             horizontal: 20,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF06644),
+                            color: _snackbarColor,
+
                             borderRadius: BorderRadius.circular(13),                            
                           ),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                "Recipe has been Saved!",
+                                _snackbarTitle,
                                 style: GoogleFonts.dmSans(
                                   fontSize: 16.5,
                                   fontWeight: FontWeight.w700,
@@ -707,7 +740,7 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                "Click to view saved recipes",
+                                _snackbarSubtitle,
                                 style: GoogleFonts.dmSans(
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.w500,
