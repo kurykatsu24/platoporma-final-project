@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:platoporma/pages/mainpage_section.dart';
 import 'package:platoporma/pages/recipe_main_screen.dart';
+import 'package:platoporma/pages/splash_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
@@ -26,26 +26,28 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Platoporma',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: MainPageSection(), //this is where the app starts
+      home: SplashScreen(), //this is where the app starts
 
       // Register named routes
       routes: {
         // other static routes if you have them, e.g. "/login": (_) => LoginPage(),
         '/saved-recipe': (context) {
           // Extract passed args safely
-          final args = ModalRoute.of(context)!.settings.arguments;
-          final Map<String, dynamic> mapArgs = (args is Map<String, dynamic>) ? args : <String, dynamic>{};
+          final rawArgs = ModalRoute.of(context)!.settings.arguments;
+          final Map<String, dynamic> args =
+              (rawArgs is Map<String, dynamic>) ? rawArgs : <String, dynamic>{};
 
           return RecipeMainScreen(
-            recipeName: mapArgs['recipeName']?.toString() ?? '',
-            recipeId: mapArgs['recipeId']?.toString() ?? '',
-            recipeJson: mapArgs['recipeJson'] ?? <String, dynamic>{},
+            recipeName: args['recipeName']?.toString() ?? '',
+            recipeId: args['recipeId']?.toString() ?? '',
+            recipeJson: args['recipeJson'] ?? {},
             isIngredientSearch: false,
             isComplete: true,
             missingCount: 0,
             matchedCount: 0,
             selectedCount: 0,
-            fromSaved: true, // <--- important flag (see below)
+            fromSaved: true,
+            saveId: args['saveId']?.toString(),   // <--- FIXED
           );
         },
       },
