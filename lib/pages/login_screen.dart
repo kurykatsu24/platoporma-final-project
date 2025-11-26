@@ -106,9 +106,12 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: const Color(0xFFFDFFEC), // Background color
       body: SafeArea(
         child: SingleChildScrollView(  // make the entire stack scrollable
-          reverse: true,               // scroll up when keyboard opens
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height, // fill the screen
+          reverse: true,              // scroll up when keyboard opens
+          child: Container(
+            // Make Stack fill at least the screen height
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height,
+            ),
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -306,14 +309,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
 
                 // Logo stacked on top of the white box
-                Flexible(
-                  child: Positioned(
-                    top: MediaQuery.of(context).size.height * 0.10,
-                    child: Image.asset(
-                      'assets/images/platoporma_logo_whitebg1.png',
-                      width: MediaQuery.of(context).size.width * 0.25,
-                      height: MediaQuery.of(context).size.height * 0.25,
-                    ),
+                Positioned(
+                  top: MediaQuery.of(context).size.height * 0.10,
+                  child: Image.asset(
+                    'assets/images/platoporma_logo_whitebg1.png',
+                    width: MediaQuery.of(context).size.width * 0.25,
+                    height: MediaQuery.of(context).size.height * 0.25,
                   ),
                 ),
               ],

@@ -17,11 +17,58 @@ class SavedRecipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = recipeJson["name"] ?? "Untitled Recipe";
-    final price = recipeJson["estimated_price"] ?? 0;
-    final cuisine = recipeJson["cuisine_type"];
-    final diet = recipeJson["diet_type"];
-    final protein = recipeJson["protein_type"];
+      // top of build()
+  final Map<String, dynamic> r = recipeJson;
+
+  // support nested saved structure: recipeJson['recipe'] or direct
+  final Map<String, dynamic>? nested = (r['recipe'] is Map) ? Map<String, dynamic>.from(r['recipe']) : null;
+  final data = nested ?? r;
+
+  // name fallback
+  final name = data['name']?.toString() ?? 'Untitled Recipe';
+
+  // price: try several keys and types, prefer centavos if present
+  num _readPriceVal(Map<String, dynamic>? src) {
+    if (src == null) return 0;
+    // common keys
+    final candidates = [
+      src['estimated_price'], // maybe a double/num or string
+      src['estimated_price_centavos'], // centavos (int/string)
+      src['price'], // maybe other key
+    ];
+
+    for (final v in candidates) {
+      if (v == null) continue;
+      // if centavos (likely integer and large), detect by key name or numeric size
+      if (v is int) {
+        if (src.containsKey('estimated_price_centavos')) {
+          return (v / 100); // convert centavos -> pesos
+        } else {
+          return v.toDouble();
+        }
+      }
+      if (v is double) return v;
+      if (v is String) {
+        final parsed = num.tryParse(v.replaceAll(',', ''));
+        if (parsed != null) {
+          if (src.containsKey('estimated_price_centavos')) {
+            return (parsed / 100);
+          }
+          // if value looks very large (>=1000) it's probably centavos
+          if (parsed >= 1000) return parsed / 100;
+          return parsed;
+        }
+      }
+    }
+    return 0;
+  }
+
+  final num pricePesos = _readPriceVal(data);
+
+  // other fields
+  final cuisine = data['cuisine_type'] ?? nested?['cuisine_type'];
+  final diet = data['diet_type'] ?? nested?['diet_type'];
+  final protein = data['protein_type'] ?? nested?['protein_type'];
 
     return GestureDetector(
     behavior: HitTestBehavior.opaque,
@@ -125,7 +172,7 @@ class SavedRecipeCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      "₱${price.toStringAsFixed(2)}",
+                      "₱${pricePesos.toStringAsFixed(2)}",
                       style: GoogleFonts.dmSans(
                         fontSize: 19,
                         fontWeight: FontWeight.w900,

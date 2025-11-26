@@ -17,6 +17,8 @@ class RecipeMainScreen extends StatefulWidget {
   final String recipeId;
   final Map<String, dynamic> recipeJson;
   final bool fromSaved;
+  final String? saveId;
+
   
 
 
@@ -31,6 +33,7 @@ class RecipeMainScreen extends StatefulWidget {
     required this.matchedCount,
     required this.selectedCount,
     this.fromSaved = false,
+    this.saveId,
   });
 
   @override
@@ -77,6 +80,10 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
         if (recipe?['id'] == null && widget.recipeId.isNotEmpty) {
           recipe?['id'] = widget.recipeId;
         }
+
+        //Fetch ingredients & procedures when viewing a saved recipe
+        _fetchRecipeDetailsForSaved(recipe!['id']);
+
         // still check if saved to keep UI consistent (will set isSaved etc.)
         _checkIfSaved();
       } else {
@@ -232,20 +239,60 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) return;
 
+    // Build a full JSON copy including ingredients & procedures
+    final fullJson = Map<String, dynamic>.from(recipe ?? {});
+    
+    fullJson['ingredients'] = recipeIngredients.map((item) {
+      return {
+        "id": item['id'],
+        "quantity_q": item['quantity_q'],
+        "prepared_type": item['prepared_type'],
+        "ingredient_name": item['ingredients']?['name'],
+        "unit_name": item['ingredient_units']?['unit_name'],
+        "conversion": item['ingredient_units']?['conversion'],
+      };
+    }).toList();
+
+    fullJson['procedures'] =
+        (recipe?['procedures'] is List) ? List.from(recipe?['procedures']) : [];
+
     setState(() {
       isAlreadySaved = true;
-      isSaved = true;    // <-- this triggers the UI scale animation
+      isSaved = true;
     });
 
-    // Insert
     await Supabase.instance.client.from('saved_recipes').insert({
       "user_id": user.id,
       "recipe_id": recipe?['id'] ?? widget.recipeId,
-      "initial_recipe_json": widget.recipeJson,
+      "initial_recipe_json": fullJson, // <-- store the FIXED JSON
     });
+  }
 
-    setState(() => isAlreadySaved = true);
+  Future<void> _fetchRecipeDetailsForSaved(String recipeId) async {
+    try {
+      final ing = await _fetchIngredientsForRecipe(recipeId);
 
+      final resp = await supabase
+          .from('recipes')
+          .select('procedures')
+          .eq('id', recipeId)
+          .maybeSingle();
+
+      setState(() {
+        // Keep price, servings, calories, etc. from saved JSON
+        recipeIngredients = ing;
+
+        // Only add procedures from DB
+        if (resp != null) {
+          recipe?['procedures'] = resp['procedures'];
+        }
+
+        // DO NOT REBUILD recipe{} OR PRICE WILL BE LOST
+        _loading = false;
+      });
+    } catch (e) {
+      debugPrint("Saved recipe detail fetch error: $e");
+    }
   }
 
 
@@ -617,17 +664,25 @@ class _RecipeMainScreenState extends State<RecipeMainScreen> {
                                     ),
                                   ],
                                 ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Ingredients",
-                                      style: GoogleFonts.dmSans(
-                                        fontSize: 26,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: -1,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                    //<----- Ingredients Title ------->
+                                    Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "Ingredients",
+                                        style: GoogleFonts.dmSans(
+                                          fontSize: 26,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: -1,
+                                        ),
                                       ),
-                                    ),
+                                    ],
+                                  ),
+
                                     const SizedBox(height: 8),
 
                                     recipeIngredients.isEmpty
