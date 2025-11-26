@@ -27,7 +27,7 @@ class _SavedSectionState extends State<SavedSection> {
 
     final response = await Supabase.instance.client
         .from('saved_recipes')
-        .select('id, recipe_id, initial_recipe_json, modified_recipe_json, created_at')
+        .select('id, recipe_id, initial_recipe_json, created_at')
         .eq('user_id', user.id)
         .order('created_at', ascending: false);
 
@@ -176,10 +176,7 @@ class _SavedSectionState extends State<SavedSection> {
             SavedRecipeCard(
               saveId: item["id"],
               recipeId: item["recipe_id"],
-              recipeJson: item["modified_recipe_json"] != null &&
-                      item["modified_recipe_json"].toString() != "{}"
-                  ? item["modified_recipe_json"]
-                  : item["initial_recipe_json"],
+              recipeJson: item["initial_recipe_json"],
               onDelete: () => _deleteSavedRecipe(item["id"]),
             ),
             const SizedBox(height: 20),
