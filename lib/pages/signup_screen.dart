@@ -33,6 +33,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   //enable button state
   bool _isButtonEnabled = false;
+  bool _isTermsAccepted = false; //muni for tracking terms and conditions checkbox
+
 
   @override
   void initState() {
@@ -49,15 +51,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
   //enable button when all fields filled
   void _updateButtonState() {
     setState(() {
-      _isButtonEnabled = Validators.areAllFieldsFilled([
+      final areFieldsFilled = Validators.areAllFieldsFilled([
         _firstNameController.text,
         _lastNameController.text,
         _emailController.text,
         _passwordController.text,
         _confirmPasswordController.text,
       ]);
+
+      // Button enables only if fields are filled AND checkbox is true
+      _isButtonEnabled = areFieldsFilled && _isTermsAccepted;
     });
   }
+
 
   //<--- Local Validation Checks --->
   Future<void> _validateAndSubmit() async {
@@ -163,7 +169,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 Positioned(
                   width: 48,
                   height: 48,
-                  top: 50,
+                  top: 42,
                   left: 30,
                   child: Container(
                     decoration: BoxDecoration(                
@@ -209,12 +215,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 //<----- White box container with contents --->
                 Padding(
-                  padding: const EdgeInsets.only(top: 80),
+                  padding: const EdgeInsets.only(top: 70),
                   child: Align(
                     alignment: Alignment.center,            
                     child: Container(              
-                      width: screenWidth * 0.9,
-                      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+                      width: screenWidth * 0.88,
+                      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 25),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(25),
@@ -252,7 +258,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 25),
+                            const SizedBox(height: 20),
 
                             //<--- theInput fields --->
                             _buildTextField('First Name', _firstNameController),
@@ -260,6 +266,41 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             _buildTextField('Email Address', _emailController),
                             _buildPasswordField('Password', true, _passwordController),
                             _buildPasswordField('Confirm Password', false, _confirmPasswordController),
+
+                            const SizedBox(height: 3),
+
+                            //<--- Terms and Conditions Checkbox --->
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Transform.translate(
+                                  offset: const Offset(0, -8),
+                                  child: Checkbox(
+                                    value: _isTermsAccepted,
+                                    activeColor: const Color(0xFFF06644),
+                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _isTermsAccepted = value ?? false;
+                                      });
+                                      _updateButtonState();
+                                    },
+                                  ),
+                                ),
+                                //the Text beside checkbox
+                                Expanded(
+                                  child: Text(
+                                    'I agree to Platoporma\'s guidelines for responsibly viewing, searching, and saving diverse and localized recipe content',
+                                    style: GoogleFonts.dmSans(
+                                      fontSize: 11.8,
+                                      color: Colors.black.withOpacity(0.75),
+                                      height: 1.20,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
                             const SizedBox(height: 20),
 
                             //<---Already have account text-->
@@ -306,7 +347,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   style: ElevatedButton.styleFrom(
                                     overlayColor: const Color.fromARGB(255, 201, 52, 14).withOpacity(0.50),
                                     fixedSize: const Size(210, 48),
-                                    backgroundColor: const Color(0xFFEE795C),
+                                    backgroundColor: const Color(0xFFf06644),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(25),
                                     ),
@@ -332,7 +373,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 //<-- Logo stacked on top of the white box--->
                 Positioned(
-                  top: 65,
+                  top: 57,
                   child: Image.asset(
                     'assets/images/platoporma_logo_whitebg1.png',
                     width: 95,
@@ -354,13 +395,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
       child: TextField(
         controller: controller,
         style: GoogleFonts.dmSans(
-          fontSize: 15,
+          fontSize: 13.5,
           color: Colors.black.withOpacity(0.6),
         ),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: GoogleFonts.dmSans(
-            fontSize: 15,
+            fontSize: 13.5,
             color: Colors.black.withOpacity(0.6),
             letterSpacing: -0.2,
           ),
@@ -384,13 +425,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
         controller: controller,
         obscureText: isMainPassword ? _obscurePassword : _obscureConfirmPassword,
         style: GoogleFonts.dmSans(
-          fontSize: 15,
+          fontSize: 13.5,
           color: Colors.black.withOpacity(0.6),
         ),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: GoogleFonts.dmSans(
-            fontSize: 15,
+            fontSize: 13.5,
             color: Colors.black.withOpacity(0.6),
           ),
           suffixIcon: IconButton(
