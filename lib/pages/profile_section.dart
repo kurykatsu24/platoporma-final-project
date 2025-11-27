@@ -132,7 +132,7 @@ class _ProfileSectionState extends State<ProfileSection> {
 
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.only(top: 40, left: 24, right: 24),
+              padding: const EdgeInsets.only(top: 80, left: 24, right: 24),
               child: Column(
                 children: [
                   //<--- White container with name, email, and saved recipe count----->
@@ -141,9 +141,11 @@ class _ProfileSectionState extends State<ProfileSection> {
                     children: [
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 22,
-                          vertical: 30,
+                        padding: const EdgeInsets.only(
+                          left: 22,
+                          right: 22,
+                          top: 65,
+                          bottom: 30,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -184,19 +186,36 @@ class _ProfileSectionState extends State<ProfileSection> {
 
                       //<----stacked circular Avatar with Initials ----->
                       Positioned(
-                        top: -40,
+                        top: -50,
                         left: 0,
                         right: 0,
                         child: Center(
-                          child: CircleAvatar(
-                            radius: 40,
-                            backgroundColor: const Color(0xFFF06644),
-                            child: Text(
-                              _getInitials(fullName),
-                              style: GoogleFonts.dmSans(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.25),
+                                  offset: const Offset(0, 2),
+                                  blurRadius: 5,
+                                ),
+                              ],
+                              border: Border.all(
                                 color: Colors.white,
-                                fontSize: 28,
-                                fontWeight: FontWeight.w700,
+                                width: 6, // <-- THICK BORDER
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 50,
+                              backgroundColor: const Color(0xFF0ABFB6),
+                              child: Text(
+                                _getInitials(fullName),
+                                style: GoogleFonts.dmSans(
+                                  color: Colors.white,
+                                  fontSize: 47,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -2,
+                                ),
                               ),
                             ),
                           ),
@@ -224,10 +243,10 @@ class _ProfileSectionState extends State<ProfileSection> {
                     label: Text(
                       "Logout",
                       style: GoogleFonts.dmSans(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
                         color: Colors.white,
-                        letterSpacing: -0.4,
+                        letterSpacing: -0.8,
                       ),
                     ),
                   ),
@@ -247,8 +266,9 @@ class _ProfileSectionState extends State<ProfileSection> {
       text,
       style: GoogleFonts.dmSans(
         fontSize: 15.5,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w800,
         color: const Color(0xFF27453E),
+        letterSpacing: -0.6,
       ),
     );
   }
