@@ -30,17 +30,35 @@ class _HomePageSectionState extends State<HomePageSection> {
   Future<void> _fetchFirstName() async {
     final user = Supabase.instance.client.auth.currentUser;
     if (user != null) {
-      final response = await Supabase.instance.client
-          .from('user_profiles')
-          .select('first_name')
-          .eq('id', user.id)
-          .maybeSingle();
+      try {
+        final response = await Supabase.instance.client
+            .from('user_profiles')
+            .select('first_name')
+            .eq('id', user.id)
+            .maybeSingle();
 
-      if (response != null && mounted) {
-        setState(() {
-          firstName = response['first_name'];
-        });
+        if (response != null && mounted) {
+          setState(() {
+            firstName = response['first_name'];
+          });
+        } else if (mounted) {
+          setState(() {
+            firstName = "User"; // fallback name
+          });
+        }
+      } catch (e) {
+        // Fallback in case of network error
+        if (mounted) {
+          setState(() {
+            firstName = "User"; // fallback name
+          });
+        }
+        debugPrint("Failed to fetch first name: $e");
       }
+    } else if (mounted) {
+      setState(() {
+        firstName = "Chef";
+      });
     }
   }
 
@@ -193,20 +211,9 @@ class _HomePageSectionState extends State<HomePageSection> {
                       child: CircularProgressIndicator(),
                     ),
                   );
-                } else if (snapshot.hasError) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 50),
-                      child: Text('Error: ${snapshot.error}'),
-                    ),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 50),
-                      child: Text('No recipes found'),
-                    ),
-                  );
+                } else if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+                  // <-- FALLBACK UI -->
+                  return _buildOfflineSticker();
                 } else {
                   return _buildRecipeGrid(snapshot.data!);
                 }
@@ -328,6 +335,58 @@ class _HomePageSectionState extends State<HomePageSection> {
             },
           );
         },
+      ),
+    );
+  }
+
+  //<---helper to catch error when supabase is not retriving due to internet issues or no internet ---->
+  Widget _buildOfflineSticker() {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+        margin: const EdgeInsets.symmetric(vertical: 50, horizontal: 20),
+        decoration: BoxDecoration(
+          color: Colors.orangeAccent.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.orangeAccent, width: 2),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.wifi_off, size: 60, color: Colors.orangeAccent),
+            const SizedBox(height: 15),
+            Text(
+              "Oops! No internet connection.\nConnect to see the latest recipes.",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.dmSans(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.orangeAccent.shade700,
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton.icon(
+              onPressed: () {
+                setState(() {
+                  recipeFuture = fetchRecipes();
+                });
+              },
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              label: const Text("Retry",
+                style: TextStyle(
+                color: Colors.white,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFf06644),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
