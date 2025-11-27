@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:platoporma/pages/signup_screen.dart';
 import 'package:platoporma/pages/recipe_main_screen.dart';
+import 'package:platoporma/pages/splash_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   //this ensures Flutter widgets are ready before running any async code
-  WidgetsFlutterBinding.ensureInitialized();  
+  WidgetsFlutterBinding.ensureInitialized();
 
   //initializing Supabase as our database (ONLINE)
   await Supabase.initialize(
@@ -26,16 +26,16 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Platoporma',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: SignUpScreen(), //this is where the app starts
-
+      home: SplashScreen(), //this is where the app starts
       //register routes
       routes: {
         // other static routes if you have them, e.g. "/login": (_) => LoginPage(),
         '/saved-recipe': (context) {
           // Extract passed args safely
           final rawArgs = ModalRoute.of(context)!.settings.arguments;
-          final Map<String, dynamic> args =
-              (rawArgs is Map<String, dynamic>) ? rawArgs : <String, dynamic>{};
+          final Map<String, dynamic> args = (rawArgs is Map<String, dynamic>)
+              ? rawArgs
+              : <String, dynamic>{};
 
           return RecipeMainScreen(
             recipeName: args['recipeName']?.toString() ?? '',
@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
             matchedCount: 0,
             selectedCount: 0,
             fromSaved: true,
-            saveId: args['saveId']?.toString(),   // <--- FIXED
+            saveId: args['saveId']?.toString(), // <--- FIXED
           );
         },
       },

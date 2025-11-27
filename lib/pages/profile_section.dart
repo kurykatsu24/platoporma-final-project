@@ -1,13 +1,74 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:platoporma/pages/onboarding_screen.dart'; 
+import 'package:platoporma/pages/onboarding_screen.dart';
 
-class ProfileSection extends StatelessWidget {
+class ProfileSection extends StatefulWidget {
   const ProfileSection({super.key});
 
+  @override
+  State<ProfileSection> createState() => _ProfileSectionState();
+}
+
+class _ProfileSectionState extends State<ProfileSection> {
+  final supabase = Supabase.instance.client;
+
+  String fullName = "";
+  String email = "";
+  String savedRecipesCount = "Loading...";
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  //<---Method for Load user data from supabase ---->
+  Future<void> _loadUserData() async {
+    final user = supabase.auth.currentUser;
+
+    if (user == null) {
+      return;
+    }
+
+    try {
+      final profile = await supabase
+          .from("user_profiles")
+          .select("first_name, last_name")
+          .eq("id", user.id)
+          .single();
+
+      final firstName = profile["first_name"] ?? "";
+      final lastName = profile["last_name"] ?? "";
+
+      fullName = "$firstName $lastName".trim();
+      email = user.email ?? "";
+
+      final saved = await supabase
+          .from("saved_recipes")
+          .select("id")
+          .eq("user_id", user.id);
+
+      if (saved.isEmpty) {
+        savedRecipesCount = "None";
+      } else {
+        savedRecipesCount = saved.length.toString();
+      }
+    } catch (e) {
+      fullName = "Unknown";
+      email = "Unknown";
+      savedRecipesCount = "None";
+    }
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  //Sign out button logic
   Future<void> _signOut(BuildContext context) async {
-    await Supabase.instance.client.auth.signOut();
+    await supabase.auth.signOut();
     if (context.mounted) {
       Navigator.pushReplacement(
         context,
@@ -18,44 +79,198 @@ class ProfileSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenW = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFDFFEC),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFCCEDD8),
-        title: Text(
-          "Here's the Profile Section",
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF27453E),
-            fontWeight: FontWeight.w600,
-            fontSize: 22,
-          ),
-        ),
-        centerTitle: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
-        ),
-        elevation: 0,
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () => _signOut(context),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFEE795C),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+
+      //<------ Appbar--------->
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: const Color(0xFFC2EBD2),
+            expandedHeight: 135,
+            pinned: false,
+            elevation: 0,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-          ),
-          child: Text(
-            'Sign Out',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+            flexibleSpace: FlexibleSpaceBar(
+              background: SafeArea(
+                bottom: false,
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/images/fork_icon.png',
+                        width: screenW * 0.19,
+                        height: screenW * 0.19,
+                      ),
+                      const SizedBox(width: 4),
+                      const Text(
+                        "User Profile",
+                        style: TextStyle(
+                          fontFamily: 'NiceHoney',
+                          color: Color(0xFF27453E),
+                          fontSize: 37,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Image.asset(
+                        'assets/images/spoon_icon.png',
+                        width: screenW * 0.19,
+                        height: screenW * 0.19,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
+
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 40, left: 24, right: 24),
+              child: Column(
+                children: [
+                  //<--- White container with name, email, and saved recipe count----->
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 22,
+                          vertical: 30,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(22),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.25),
+                              offset: const Offset(0, 2),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: isLoading
+                            ? const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(20),
+                                  child: CircularProgressIndicator(),
+                                ),
+                              )
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildHeader("Name"),
+                                  _buildValue(fullName),
+
+                                  const SizedBox(height: 25),
+
+                                  _buildHeader("Email"),
+                                  _buildValue(email),
+
+                                  const SizedBox(height: 25),
+
+                                  _buildHeader("Saved Recipes"),
+                                  _buildValue(savedRecipesCount),
+                                ],
+                              ),
+                      ),
+
+                      //<----stacked circular Avatar with Initials ----->
+                      Positioned(
+                        top: -40,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: CircleAvatar(
+                            radius: 40,
+                            backgroundColor: const Color(0xFFF06644),
+                            child: Text(
+                              _getInitials(fullName),
+                              style: GoogleFonts.dmSans(
+                                color: Colors.white,
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 38),
+
+                  // logout button UI
+                  ElevatedButton.icon(
+                    onPressed: () => _signOut(context),
+                    icon: const Icon(Icons.logout_rounded, color: Colors.white),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFf06644),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 28,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+                    label: Text(
+                      "Logout",
+                      style: GoogleFonts.dmSans(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  //UI helpers--->
+  Widget _buildHeader(String text) {
+    return Text(
+      text,
+      style: GoogleFonts.dmSans(
+        fontSize: 15.5,
+        fontWeight: FontWeight.w700,
+        color: const Color(0xFF27453E),
+      ),
+    );
+  }
+
+  Widget _buildValue(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Text(
+        text,
+        style: GoogleFonts.dmSans(fontSize: 15, color: Colors.black87),
+      ),
+    );
+  }
+
+  String _getInitials(String name) {
+    if (name.isEmpty) return "?";
+
+    final parts = name.trim().split(" ");
+    if (parts.length == 1) {
+      return parts.first[0].toUpperCase();
+    }
+
+    return (parts.first[0] + parts.last[0]).toUpperCase();
   }
 }
