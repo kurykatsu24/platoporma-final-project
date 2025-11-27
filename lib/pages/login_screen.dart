@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:platoporma/pages/onboarding_screen.dart';
 import 'package:platoporma/pages/signup_screen.dart'; 
 import 'package:platoporma/pages/login_completion_screen.dart';
+//for authentication
 import 'package:platoporma/auth/validators.dart';
 import 'package:platoporma/auth/auth_service.dart';
 
@@ -16,14 +17,14 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
 
-  // TextEditingControllers to track input
+  //TextEditingControllers to track input
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // Initialize AuthService
+  //initialization of AuthService
   final AuthService _authService = AuthService();
 
-  // Enable button state
+  //enable button state
   bool _isButtonEnabled = false;
 
   @override
@@ -42,21 +43,22 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  // Snackbar Layout for error messages
+  //snackbar Layout for error messages
   void _showErrorMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: GoogleFonts.dmSans(fontSize: 16)),
-        backgroundColor: Colors.red.shade400,
+        content: Text(message, style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w500,
+        letterSpacing: -0.4)),
+        backgroundColor: Color(0xffFC4D4D),
         behavior: SnackBarBehavior.floating,
         elevation: 5,
         margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
   }
 
-  //---- LOGIN VALIDATION (local) AND SUPABASE AUTH -----
+  //<---- Login Validation (local only) and Supabase Auth ---->-
   Future<void> _validateAndLogin() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
@@ -74,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     try {
-      //Call Supabase sign-in
+      //<--- Call Supabase sign-in---->
       final errorMessage = await _authService.signIn(email, password);
 
       if (errorMessage == null) {
@@ -85,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
           MaterialPageRoute(builder: (context) => const LoginCompletionScreen()),
         );
       } else {
-        // ❌ Login failed
+        //login Failed
         _showErrorMessage(errorMessage);
       }
     } catch (e) {
@@ -103,19 +105,18 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFFEC), // Background color
+      backgroundColor: const Color(0xFFFDFFEC), 
       body: SafeArea(
-        child: SingleChildScrollView(  // make the entire stack scrollable
-          reverse: true,              // scroll up when keyboard opens
+        child: SingleChildScrollView(  
+          reverse: true,         
           child: Container(
-            // Make Stack fill at least the screen height
             constraints: BoxConstraints(
               minHeight: MediaQuery.of(context).size.height,
             ),
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Back button
+                //back button
                 Positioned(
                   width: MediaQuery.of(context).size.width * 0.13,
                   height: MediaQuery.of(context).size.height * 0.13,
@@ -143,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             transitionDuration: const Duration(milliseconds: 500),
                             pageBuilder: (context, animation, secondaryAnimation) => const OnboardingScreen(),
                             transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                              const begin = Offset(-1.0, 0.0); // slide in from left to right
+                              const begin = Offset(-1.0, 0.0); //transition between screen(slide in from left to right)
                               const end = Offset.zero;
                               final curve = Curves.easeInOut;
 
@@ -163,15 +164,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 150),
 
-                // White box container with drop shadow
+                //<-- White box container with drop shadow ----->
                 Padding(
                   padding: const EdgeInsets.only(top: 40),
                   child: Align(
                     alignment: Alignment.center,            
                     child: Container(              
-                      width: MediaQuery.of(context).size.width * 0.9,   // 90% of screen
+                      width: MediaQuery.of(context).size.width * 0.9, 
                       height: MediaQuery.of(context).size.height * 0.58,
-
                       padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -187,22 +187,23 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
-                            // Title with background
+                            //<--- Title --->
                             Padding(
-                              padding: const EdgeInsets.only(top: 20),
+                              padding: const EdgeInsets.only(top: 18),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 15),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFCCEDD8),
+                                  color: const Color(0xFFC2ebd2),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Center(
                                   child: Text(
                                     'Login',
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 28 * MediaQuery.of(context).textScaleFactor,
-                                      letterSpacing: -2,
+                                    style: TextStyle(
+                                      fontFamily: 'NiceHoney',
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 36 * MediaQuery.of(context).textScaleFactor,
+                                      letterSpacing: -1,
                                       color: const Color(0xFF27453E),
                                     ),
                                   ),
@@ -211,29 +212,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             const SizedBox(height: 30),
 
-                            // Input fields
+                            //<-- call input fields -->
                             _buildTextField('Email Address', _emailController),
                             _buildPasswordField('Password', _passwordController),
-                            const SizedBox(height: 1),
-                            
-                            // Forgot Password text
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: GestureDetector(
-                                onTap: () {
-                                  // TODO: Navigate to Forgot Password screen
-                                },
-                                child: Text(
-                                  'Forgot Password?',
-                                  style: GoogleFonts.dmSans(
-                                    fontSize: 12 * MediaQuery.of(context).textScaleFactor,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.6),
-                                    letterSpacing: -0.2,
-                                  ),
-                                ),
-                              ),
-                            ),
+
                             const SizedBox(height: 30),
 
                             // Don't have account text
@@ -262,7 +244,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     style: GoogleFonts.dmSans(
                                       fontSize: 14 * MediaQuery.of(context).textScaleFactor,
                                       fontWeight: FontWeight.bold,
-                                      color: const Color(0xFFEE795C),
+                                      color: const Color(0xFFF06644),
                                       letterSpacing: -0.2,
                                     ),
                                   ),
@@ -274,7 +256,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             // Login button
                             SizedBox(                      
                               child: Opacity(
-                                opacity: _isButtonEnabled ? 1.0 : 0.65, // disable button until filled
+                                opacity: _isButtonEnabled ? 1.0 : 0.80, // disable button until filled
                                 child: ElevatedButton(
                                   onPressed: _isButtonEnabled
                                       ? () {
@@ -284,18 +266,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                   style: ElevatedButton.styleFrom(
                                     overlayColor: const Color.fromARGB(255, 201, 52, 14).withOpacity(0.50),
                                     fixedSize: const Size(210, 48),
-                                    backgroundColor: const Color(0xFFEE795C),
+                                    backgroundColor: const Color(0xFFF06644),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(25),
                                     ),
                                   ),
                                   child: Text(
                                     'Login',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14 * MediaQuery.of(context).textScaleFactor,
+                                    style: GoogleFonts.dmSans(
+                                      fontSize: 15.3 * MediaQuery.of(context).textScaleFactor,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
-                                      letterSpacing: -0.2,
+                                      letterSpacing: -0.4,
                                     ),
                                   ),
                                 ),
@@ -308,7 +290,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
 
-                // Logo stacked on top of the white box
+                //<-- Logo stacked on top of the white box --->
                 Positioned(
                   top: MediaQuery.of(context).size.height * 0.10,
                   child: Image.asset(
@@ -325,7 +307,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Custom reusable textfield
+  //<--- Custom textfield --->
   Widget _buildTextField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
@@ -346,14 +328,14 @@ class _LoginScreenState extends State<LoginScreen> {
             borderSide: BorderSide(color: Colors.black.withOpacity(0.1)),
           ),
           focusedBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Color(0xFFEE795C)),
+            borderSide: BorderSide(color: Color(0xFFF06644)),
           ),
         ),
       ),
     );
   }
 
-  // Password field with toggle
+  //<--- Password field with toggle ---->
   Widget _buildPasswordField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),

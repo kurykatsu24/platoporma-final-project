@@ -21,24 +21,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
-  // Create an instance of your AuthService
+  //Instance for AuthService
   final AuthService _authService = AuthService();
 
-  // CONTROLLERS FOR VALIDATION
+  //Controllers for validation
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  // BUTTON ENABLE STATE
+  //enable button state
   bool _isButtonEnabled = false;
 
   @override
   void initState() {
     super.initState();
 
-    //ADD LISTENERS TO UPDATE BUTTON STATE
+    //listeners to update button state (the fields will be checked)
     _firstNameController.addListener(_updateButtonState);
     _lastNameController.addListener(_updateButtonState);
     _emailController.addListener(_updateButtonState);
@@ -46,7 +46,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _confirmPasswordController.addListener(_updateButtonState);
   }
 
-  // Enable button when all fields filled
+  //enable button when all fields filled
   void _updateButtonState() {
     setState(() {
       _isButtonEnabled = Validators.areAllFieldsFilled([
@@ -59,7 +59,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     });
   }
 
-  //LOCAL VALIDATION CHECKS
+  //<--- Local Validation Checks --->
   Future<void> _validateAndSubmit() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
@@ -82,13 +82,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
 
     try {
-      // 👇 Call Supabase signup via AuthService
+      //Call Supabase signup via AuthService
       final error = await _authService.signUp(email, password);
 
       if (!mounted) return;
 
       if (error == null) {
-        // after signup is successful, get the current user
+        //after signup is successful, get the current user
         final user = supabase.auth.currentUser;
 
         if (user != null) {
@@ -101,7 +101,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           });
         }
 
-        //Navigate to the completion screen
+        //Navigate to the completion screen (with slide transition)
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
@@ -131,17 +131,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-
   //Custom Snackbar Layout for error messages
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: GoogleFonts.dmSans(fontSize: 16)),
+        content: Text(message, style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w500, letterSpacing: -0.4)),
         backgroundColor: Colors.red.shade400,
         behavior: SnackBarBehavior.floating,
         elevation: 5,
         margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
   }
@@ -151,12 +150,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFFEC), // Background color
+      backgroundColor: const Color(0xFFFDFFEC),
       body: SafeArea(
-        child: SingleChildScrollView(  //make the entire stack scrollable
-          reverse: true,               //scroll up when keyboard opens
+        child: SingleChildScrollView(  
+          reverse: true,               
           child: SizedBox(
-            height: MediaQuery.of(context).size.height, // fill the screen
+            height: MediaQuery.of(context).size.height, 
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -202,14 +201,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ),
                         );
                       },
-
                     ),
                   ),
                 ),
 
                 const SizedBox(height: 180),
 
-                // White box container with drop shadow
+                //<----- White box container with contents --->
                 Padding(
                   padding: const EdgeInsets.only(top: 80),
                   child: Align(
@@ -231,22 +229,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
-                            // Title with background
+                            //< ---Title--->
                             Padding(
                               padding: const EdgeInsets.only(top: 20),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 15),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFCCEDD8),
+                                  color: const Color(0xFFC2EBD2),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Center(
                                   child: Text(
                                     'Sign-Up',
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 28,
-                                      letterSpacing: -2,
+                                    style: TextStyle(
+                                      fontFamily: 'NiceHoney',
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 38,
+                                      letterSpacing: -1,
                                       color: const Color(0xFF27453E),
                                     ),
                                   ),
@@ -255,7 +254,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ),
                             const SizedBox(height: 25),
 
-                            // Input fields
+                            //<--- theInput fields --->
                             _buildTextField('First Name', _firstNameController),
                             _buildTextField('Last Name', _lastNameController),
                             _buildTextField('Email Address', _emailController),
@@ -263,7 +262,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             _buildPasswordField('Confirm Password', false, _confirmPasswordController),
                             const SizedBox(height: 20),
 
-                            // Already have account text
+                            //<---Already have account text-->
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -289,7 +288,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     style: GoogleFonts.dmSans(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
-                                      color: const Color(0xFFEE795C),
+                                      color: const Color(0xFFf06644),
                                       letterSpacing: -0.2,
                                     ),
                                   ),
@@ -298,12 +297,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ),
                             const SizedBox(height: 35),
 
-                            // Complete registration button
+                            //<--- Complete registration button --->
                             SizedBox(                      
-                              child: Opacity( //opacity for disabled state
-                                opacity: _isButtonEnabled ? 1.0 : 0.65,
+                              child: Opacity( 
+                                opacity: _isButtonEnabled ? 1.0 : 0.80,
                                 child: ElevatedButton(
-                                  onPressed: _isButtonEnabled ? _validateAndSubmit : null, //button disabled until all filled
+                                  onPressed: _isButtonEnabled ? _validateAndSubmit : null,
                                   style: ElevatedButton.styleFrom(
                                     overlayColor: const Color.fromARGB(255, 201, 52, 14).withOpacity(0.50),
                                     fixedSize: const Size(210, 48),
@@ -314,11 +313,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   ),
                                   child: Text(
                                     'Complete Registration',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
+                                    style: GoogleFonts.dmSans(
+                                      fontSize: 15.3,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
-                                      letterSpacing: -0.2,
+                                      letterSpacing: -0.4,
                                     ),
                                   ),
                                 ),
@@ -331,7 +330,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
 
-                // Logo stacked on top of the white box
+                //<-- Logo stacked on top of the white box--->
                 Positioned(
                   top: 65,
                   child: Image.asset(
@@ -348,7 +347,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  // Custom reusable textfield
+  //<--- Custom textfield --->
   Widget _buildTextField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
@@ -369,14 +368,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
             borderSide: BorderSide(color: Colors.black.withOpacity(0.1)),
           ),
           focusedBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Color(0xFFEE795C)),
+            borderSide: BorderSide(color: Color(0xFFf06644)),
           ),
         ),
       ),
     );
   }
 
-  // Password field with toggle
+  //<--- Password field with toggle --->
   Widget _buildPasswordField(String label, bool isPasswordField, TextEditingController controller) {
     final isMainPassword = isPasswordField;
     return Padding(
