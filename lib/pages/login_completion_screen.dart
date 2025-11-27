@@ -53,82 +53,74 @@ class _LoginCompletionScreenState extends State<LoginCompletionScreen> {
                 // Logo
                 Image.asset(
                   'assets/images/platoporma_logo_whitebg1.png',
-                  width: MediaQuery.of(context).size.width * 0.38
+                  width: MediaQuery.of(context).size.width * 0.35
                 ),
                 const SizedBox(height: 5),
 
-                // Reused Title Container from onboarding
-                Transform.translate(
+                    //<---Title container (include ang Welcome to PlatoPorma and fork and spoon icons with bg mint green) --->
+                    Transform.translate(
                       offset: const Offset(0, 8),
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                          padding: const EdgeInsets.symmetric(horizontal: 1, vertical: 6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFCCEDD8),
-                            borderRadius: BorderRadius.circular(20),
+                            color: const Color(0xFFC2ebd2),
+                            borderRadius: BorderRadius.circular(22),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Transform.translate(
-                                offset: const Offset(13, 0),
+                                offset: const Offset(8, 0),
                                 child: Image.asset(
                                   'assets/images/fork_icon.png',
-                                  width: 65,
-                                  height: 65,
+                                  width: 75,
+                                  height: 75,
                                 ),
                               ),
                               Column(
                                 children: [
                                   Transform.translate(
-                                    offset: const Offset(0, 12),
+                                    offset: const Offset(0, 6),
                                     child: Text(
                                       'Welcome to',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 24,
+                                      style: GoogleFonts.dmSans(
+                                        fontSize: 20,
                                         fontWeight: FontWeight.w600,
                                         color: const Color(0xFF27453E),
-                                        letterSpacing: -1.5,
+                                        letterSpacing: -2.2,
                                       ),
                                     ),
                                   ),
                                   Transform.translate(
-                                    offset: const Offset(0, -5),
+                                    offset: const Offset(0, -3),
                                     child: RichText(
                                       text: TextSpan(
                                         children: [
                                           TextSpan(
-                                            text: 'Plato',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 38,
-                                              fontWeight: FontWeight.bold,
-                                              color: const Color(0xFF27453E),
-                                              letterSpacing: -2,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: 'Porma',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 38,
-                                              fontStyle: FontStyle.italic,
-                                              fontWeight: FontWeight.bold,
-                                              color: const Color(0xFF27453E),
-                                              letterSpacing: -2,
+                                            text: 'PlatoPorma',
+                                            style: const TextStyle(
+                                              fontFamily: 'NiceHoney',
+                                              fontSize: 44,
+                                              fontWeight: FontWeight.w600,
+                                              color: Color(0xFF27453E),
+                                              letterSpacing: 0,
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
                                   ),
+
                                 ],
                               ),
                               Transform.translate(
-                                offset: const Offset(-13, 0),
+                                offset: const Offset(-8, 0),
                                 child: Image.asset(
                                   'assets/images/spoon_icon.png',
-                                  width: 65,
-                                  height: 65,
+                                  width: 75,
+                                  height: 75,
                                 ),
                               ),
                             ],
@@ -139,12 +131,12 @@ class _LoginCompletionScreenState extends State<LoginCompletionScreen> {
 
 
                 
-                const SizedBox(height: 100),
+                const SizedBox(height: 95),
 
                 // --- Welcome Text ---
                 _buildCompletionText(firstName),
 
-                const SizedBox(height: 150),
+                const SizedBox(height: 140),
 
                 // --- Proceed Button ---
                 ElevatedButton(
@@ -168,7 +160,7 @@ class _LoginCompletionScreenState extends State<LoginCompletionScreen> {
                         );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEE795C),
+                    backgroundColor: const Color(0xFFf06644),
                     overlayColor: const Color.fromARGB(
                       255,
                       218,
@@ -182,11 +174,11 @@ class _LoginCompletionScreenState extends State<LoginCompletionScreen> {
                   ),
                   child: Text(
                     'Proceed to Homepage',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14 * MediaQuery.of(context).textScaleFactor,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 15.3 * MediaQuery.of(context).textScaleFactor,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
-                      letterSpacing: -0.2,
+                      letterSpacing: -0.4,
                     ),
                   ),
                 ),
@@ -207,11 +199,12 @@ class _LoginCompletionScreenState extends State<LoginCompletionScreen> {
         Text(
           'Welcome back,',
           textAlign: TextAlign.center,
-          style: GoogleFonts.poppins(
-            fontSize: 42 * MediaQuery.of(context).textScaleFactor,
+          style: TextStyle(
+            fontFamily: 'NiceHoney',
+            fontSize: 40 * MediaQuery.of(context).textScaleFactor,
             height: 0.9, // tighter line height
-            fontWeight: FontWeight.bold,
-            letterSpacing: -2,
+            fontWeight: FontWeight.w500,
+            letterSpacing: -0.4,
             color: const Color(0xFF27453E),
           ),
         ),
@@ -220,10 +213,11 @@ class _LoginCompletionScreenState extends State<LoginCompletionScreen> {
         Text(
           '${firstName ?? ''}!',
           textAlign: TextAlign.center,
-          style: GoogleFonts.poppins(
-            fontSize: 50 * MediaQuery.of(context).textScaleFactor,
+          style: TextStyle(
+            fontFamily: 'NiceHoney',
+            fontSize: 48 * MediaQuery.of(context).textScaleFactor,
             height: 1.2, // consistent line height
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             letterSpacing: -1,
             color: const Color(0xFF27453E),
           ),
@@ -237,8 +231,7 @@ class _LoginCompletionScreenState extends State<LoginCompletionScreen> {
           textAlign: TextAlign.center,
           style: GoogleFonts.dmSans(
             fontSize: 16 * MediaQuery.of(context).textScaleFactor,
-            fontStyle: FontStyle.italic,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
             color: const Color(0xFF27453E),
             letterSpacing: -1,
           ),
