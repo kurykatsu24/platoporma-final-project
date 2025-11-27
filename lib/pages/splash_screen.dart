@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:platoporma/pages/mainpage_section.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:platoporma/pages/onboarding_screen.dart';
@@ -62,12 +61,12 @@ class _SplashScreenState extends State<SplashScreen>
       await Future.delayed(Duration(milliseconds: 700));
       await gradientController.forward();
 
-      // After all animations are done, check auth state and navigate accordingly
+      //After all animations are done, check auth state and navigate accordingly
       await Future.delayed(const Duration(milliseconds: 200)); // optional pause
       if (mounted) {
         final supabase = Supabase.instance.client;
         
-        // Wait for Supabase to restore session
+        //Wait for Supabase to restore session
         await Future.delayed(const Duration(milliseconds: 500));
         final user = supabase.auth.currentUser;
 
@@ -85,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen>
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },
-            transitionDuration: const Duration(milliseconds: 2000),
+            transitionDuration: const Duration(milliseconds: 1000),
           ),
         );
       }
@@ -110,15 +109,15 @@ class _SplashScreenState extends State<SplashScreen>
           animation: Listenable.merge(
               [dropController, growController, textController, gradientController]),
           builder: (context, child) {
-            double dropY = dropAnimation.value * 600 - 500; // adjust starting top
-            double size = 100 + (growAnimation.value * 100); // 100 -> 200
+            double dropY = dropAnimation.value * 565 - 500; // adjust starting top
+            double size = 100 + (growAnimation.value * 80); // 100 -> 200
 
             // Gradient that transitions in
             final gradient = LinearGradient(
               colors: [
-                Color.lerp(Color.fromARGB(255, 199, 68, 36),
-                        Color(0xFFEE795C), gradientProgress.value)!,
-                Color.lerp(Color(0xFFEE795C), Color(0XFFCCEDD8),
+                Color.lerp(Color(0xFFEF5F3B),
+                        Color(0xFFF06644), gradientProgress.value)!,
+                Color.lerp(Color(0xffF06644), Color(0XFFA0EFBF),
                         gradientProgress.value)!,
               ],
               begin: Alignment.topLeft,
@@ -136,7 +135,7 @@ class _SplashScreenState extends State<SplashScreen>
                     height: size,
                   ),
                 ),
-                SizedBox(height: 120),
+                SizedBox(height: 85),
                 FadeTransition(
                   opacity: textOpacity,
                   child: ShaderMask(
@@ -147,21 +146,22 @@ class _SplashScreenState extends State<SplashScreen>
                         children: [
                           TextSpan(
                             text: 'Plato',
-                            style: GoogleFonts.poppins(
-                              fontSize: 40,
-                              fontWeight: FontWeight.bold,
+                            style: TextStyle(
+                              fontFamily: 'NiceHoney',
+                              fontSize: 45,
+                              fontWeight: FontWeight.w600,
                               color: Colors.white, // color overridden by ShaderMask
-                              letterSpacing: -2,
+                              letterSpacing: 1,
                             ),
                           ),
                           TextSpan(
                             text: 'Porma',
-                            style: GoogleFonts.poppins(
-                              fontSize: 40,
-                              fontWeight: FontWeight.bold,
-                              fontStyle: FontStyle.italic,
+                            style: TextStyle(
+                              fontFamily: 'NiceHoney',
+                              fontSize: 45,
+                              fontWeight: FontWeight.w600,
                               color: Colors.white,
-                              letterSpacing: -2,
+                              letterSpacing: 1,
                             ),
                           ),
                         ],
