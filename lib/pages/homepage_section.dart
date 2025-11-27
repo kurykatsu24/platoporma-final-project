@@ -1,10 +1,12 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:platoporma/pages/recipe_main_screen.dart';
 import 'package:platoporma/widgets/recipes/recipe_card.dart';
+
+// NEW: import sticky header widget
+import 'package:platoporma/widgets/homepage_sticky_header.dart';
 
 class HomePageSection extends StatefulWidget {
   const HomePageSection({super.key});
@@ -15,11 +17,14 @@ class HomePageSection extends StatefulWidget {
 
 class _HomePageSectionState extends State<HomePageSection> {
   String? firstName;
+  String? selectedCategory; // null = no filter
+  late Future<List<RecipeCard>> recipeFuture;
 
   @override
   void initState() {
     super.initState();
     _fetchFirstName();
+    recipeFuture = fetchRecipes();
   }
 
   Future<void> _fetchFirstName() async {
@@ -49,13 +54,102 @@ class _HomePageSectionState extends State<HomePageSection> {
     return res;
   }
 
+  Future<List<RecipeCard>> fetchRecipes() async {
+    final supabase = Supabase.instance.client;
+
+    final response = await supabase.from('recipes').select("""
+      id,
+      name,
+      cuisine_type,
+      diet_type,
+      protein_type,
+      estimated_price_centavos,
+      images
+    """);
+
+    final list = (response as List).cast<Map<String, dynamic>>();
+
+    return list.map((json) {
+      return RecipeCard(
+        recipeId: json['id'],
+        recipeJson: json,
+        recipeName: json['name'] ?? '',
+        cuisineType: json['cuisine_type'],
+        dietType: json['diet_type'],
+        proteinType: json['protein_type'],
+        estimatedPriceCentavos: json['estimated_price_centavos'],
+        imagePath: json['images'],
+      );
+    }).toList();
+  }
+
+  Future<List<RecipeCard>> fetchRecipesFiltered() async {
+    final supabase = Supabase.instance.client;
+
+    PostgrestFilterBuilder query = supabase.from('recipes').select("""
+      id,
+      name,
+      cuisine_type,
+      diet_type,
+      protein_type,
+      estimated_price_centavos,
+      images
+    """);
+
+    // Apply category filters
+    switch (selectedCategory) {
+      case "Budget-Friendly":
+        query = query.lte('estimated_price_centavos', 15000);
+        break;
+      case "Healthy":
+        query = query.lte('total_calories', 450);
+        break;
+      case "Quick & Easy":
+        query = query.lte('prep_time', 15);
+        break;
+      case "Creative Twists":
+        query = query.eq('is_twist', true);
+        break;
+      case "International":
+        query = query.eq('is_international', true);
+        break;
+    }
+
+    final response = await query;
+    final list = (response as List).cast<Map<String, dynamic>>();
+
+    return list.map((json) {
+      return RecipeCard(
+        recipeId: json['id'],
+        recipeJson: json,
+        recipeName: json['name'] ?? '',
+        cuisineType: json['cuisine_type'],
+        dietType: json['diet_type'],
+        proteinType: json['protein_type'],
+        estimatedPriceCentavos: json['estimated_price_centavos'],
+        imagePath: json['images'],
+      );
+    }).toList();
+  }
+
+  void _onCategorySelected(String category) {
+    setState(() {
+      if (selectedCategory == category) {
+        selectedCategory = null; // toggle off
+        recipeFuture = fetchRecipes();
+      } else {
+        selectedCategory = category; // turn on
+        recipeFuture = fetchRecipesFiltered();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFDFFEC),
 
-            //< -------------- The Appbar ------------------ >
+      //< -------------- The Appbar ------------------ >
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -70,102 +164,27 @@ class _HomePageSectionState extends State<HomePageSection> {
                 bottom: Radius.circular(30),
               ),
             ),
-
             flexibleSpace: FlexibleSpaceBar(
               background: SafeArea(
                 bottom: false,
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFC2EBD2),
-                    borderRadius: BorderRadius.vertical(
-                      bottom: Radius.circular(30),
-                    ),
-                  ),
-                  child: Builder(
-                    builder: (context) {
-                      final screenWidth = MediaQuery.of(context).size.width;
-                      return Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: screenWidth * 0.04,
-                          vertical: screenWidth * 0.05,
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            //Logo displayed sa right
-                            Image.asset(
-                              'assets/images/platoporma_logo_whitebg2.png',
-                              width: 80,
-                            ),
-
-                            SizedBox(width: screenWidth * 0.03),
-
-                            //<---------- Text Column ---------->
-                            ///used for texts especially "first name" retrieval to handle long first names
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    "Welcome,",
-                                    style: TextStyle(
-                                      fontFamily: 'NiceHoney',
-                                      color: const Color(0xFF27453E),
-                                      fontWeight: FontWeight.w100,
-                                      fontSize: 33,
-                                      letterSpacing: -0.2,
-                                      height: 0.7,
-                                    ),
-                                  ),
-
-                                  Text(
-                                    "${firstName ?? ""}!",
-                                    style: TextStyle(
-                                      fontFamily: 'NiceHoney',
-                                      color: const Color(0xFF27453E),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 28,
-                                      letterSpacing: -0.3,
-                                    ),
-                                    softWrap: true,
-                                    maxLines: null,
-                                    overflow: TextOverflow.visible,
-                                  ),
-
-                                  Text(
-                                    "Take a scroll at a wide range of recipes",
-                                    style: GoogleFonts.poppins(
-                                      color: const Color(0xFF27453E),
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      letterSpacing: -0.5,
-                                    ),
-                                    softWrap: true,
-                                    maxLines: null,
-                                    overflow: TextOverflow.visible,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                child: _buildWelcomeHeader(context),
               ),
             ),
           ),
 
-          //Sticky header for explore recipes with horizontal carousel
-          SliverPersistentHeader(pinned: true, delegate: _StickyHeaderDelegate(),
+          //<------ Sticky Header widget ------>
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: HomepageStickyHeaderDelegate(
+              onCategoryTap: _onCategorySelected,
+              selectedCategory: selectedCategory,
+            ),
           ),
 
-          // <------------- Main Body w/ recipe cards --------------->
+          //<------------- Main Body w/ recipe cards --------------->
           SliverToBoxAdapter(
             child: FutureBuilder<List<RecipeCard>>(
-              future: fetchRecipes(),
+              future: recipeFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
@@ -189,49 +208,7 @@ class _HomePageSectionState extends State<HomePageSection> {
                     ),
                   );
                 } else {
-                  final recipes = snapshot.data!;
-                  return Padding(
-                    padding: const EdgeInsets.only(left: 7, right: 7, bottom: 6),
-                    child: MasonryGridView.count(
-                      padding: EdgeInsets.only(top: 0),
-                      physics: const NeverScrollableScrollPhysics(), // important: disables internal scroll
-                      shrinkWrap: true, // important: allows it to fit inside scroll view
-                      crossAxisCount: 2,           // 2 columns
-                      mainAxisSpacing: 2,         // vertical gap
-                      crossAxisSpacing: 2,        // horizontal gap
-                      itemCount: recipes.length,
-                      itemBuilder: (context, index) {
-                        final recipe = recipes[index];
-                        return RecipeCard(
-                          recipeId: recipe.recipeId,
-                          recipeJson: recipe.recipeJson,
-                          recipeName: recipe.recipeName,
-                          imagePath: recipe.imagePath,
-                          estimatedPriceCentavos: recipe.estimatedPriceCentavos,
-                          cuisineType: recipe.cuisineType,
-                          dietType: recipe.dietType,
-                          proteinType: recipe.proteinType,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => RecipeMainScreen(
-                                  recipeId: recipe.recipeId,       // <--- pass the id
-                                  recipeJson: recipe.recipeJson,
-                                  recipeName: recipe.recipeName,
-                                  isIngredientSearch: false,
-                                  isComplete: false,
-                                  missingCount: 0,
-                                  matchedCount: 0,
-                                  selectedCount: 0,
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      }
-                    ),
-                  );
+                  return _buildRecipeGrid(snapshot.data!);
                 }
               },
             ),
@@ -240,93 +217,118 @@ class _HomePageSectionState extends State<HomePageSection> {
       ),
     );
   }
-}
 
-//created separate class for the stickyheader: Explore Recipes
-class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: 10,
-          sigmaY: 10,
-        ),
+  Widget _buildWelcomeHeader(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
 
-        child: Container(
-          width: double.infinity,
-          height: maxExtent,
-          color: const Color(0xFFFDFFEC).withOpacity(0.85),
-        
-          child: Padding(
-            padding: const EdgeInsets.only(left: 18, right: 25, top: 25, bottom: 5),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // <---- Title ------>
-                Text(
-                  "Explore Recipes",
-                  style: const TextStyle(
-                  fontFamily: 'NiceHoney',
-                  fontSize: 28,
-                  fontWeight: FontWeight.w100, 
-                  color: const Color(0xff27453E),
-                  letterSpacing: -0.3,
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // <--------- Horizontal Pills Carousel ------>
-                SizedBox(
-                  height: 33,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      _buildCategoryPill("Budget-Friendly"),
-                      _buildCategoryPill("Healthy"),
-                      _buildCategoryPill("Limited Ingredients"),
-                      _buildCategoryPill("Quick & Easy"),
-                      _buildCategoryPill("Comfort Food"),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // <------ Creates an inactive pill ------->
-  Widget _buildCategoryPill(String label) {
     return Container(
-      margin: const EdgeInsets.only(right: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFFECECEC), 
-        borderRadius: BorderRadius.circular(13),
-        border: Border.all(color: Colors.black.withOpacity(0.60), width: 1.5),
+      decoration: const BoxDecoration(
+        color: Color(0xFFC2EBD2),
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(30),
+        ),
       ),
-      child: Text(
-        label,
-        style: GoogleFonts.dmSans(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: const Color(0xFF6E6E6E),
-          letterSpacing: -0.5,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: screenWidth * 0.04,
+          vertical: screenWidth * 0.05,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/platoporma_logo_whitebg2.png',
+              width: 80,
+            ),
+            SizedBox(width: screenWidth * 0.03),
+
+            // Text column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Welcome,",
+                    style: TextStyle(
+                      fontFamily: 'NiceHoney',
+                      color: const Color(0xFF27453E),
+                      fontWeight: FontWeight.w100,
+                      fontSize: 33,
+                      letterSpacing: -0.2,
+                      height: 0.7,
+                    ),
+                  ),
+                  Text(
+                    "${firstName ?? ""}!",
+                    style: TextStyle(
+                      fontFamily: 'NiceHoney',
+                      color: const Color(0xFF27453E),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 28,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                  Text(
+                    "Take a scroll at a wide range of recipes",
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF27453E),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  @override
-  double get maxExtent => 130; //increased to fit title + pills
-
-  @override
-  double get minExtent => 130; //same for non-collapsing sticky header
-
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
+  Widget _buildRecipeGrid(List<RecipeCard> recipes) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 7, right: 7, bottom: 6),
+      child: MasonryGridView.count(
+        padding: EdgeInsets.only(top: 0),
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        crossAxisCount: 2,
+        mainAxisSpacing: 2,
+        crossAxisSpacing: 2,
+        itemCount: recipes.length,
+        itemBuilder: (context, index) {
+          final recipe = recipes[index];
+          return RecipeCard(
+            recipeId: recipe.recipeId,
+            recipeJson: recipe.recipeJson,
+            recipeName: recipe.recipeName,
+            imagePath: recipe.imagePath,
+            estimatedPriceCentavos: recipe.estimatedPriceCentavos,
+            cuisineType: recipe.cuisineType,
+            dietType: recipe.dietType,
+            proteinType: recipe.proteinType,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => RecipeMainScreen(
+                    recipeId: recipe.recipeId,
+                    recipeJson: recipe.recipeJson,
+                    recipeName: recipe.recipeName,
+                    isIngredientSearch: false,
+                    isComplete: false,
+                    missingCount: 0,
+                    matchedCount: 0,
+                    selectedCount: 0,
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
 }

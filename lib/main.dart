@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(primarySwatch: Colors.blue),
       home: SplashScreen(), //this is where the app starts
 
-      // Register named routes
+      //register routes
       routes: {
         // other static routes if you have them, e.g. "/login": (_) => LoginPage(),
         '/saved-recipe': (context) {
