@@ -183,23 +183,25 @@ class _ProfileSectionState extends State<ProfileSection> {
                                   child: CircularProgressIndicator(),
                                 ),
                               )
-                            : Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildHeader("Name"),
-                                  _buildValue(fullName),
+                            : isOffline
+                                ? _buildOfflineSticker()
+                                : Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _buildHeader("Name"),
+                                      _buildValue(fullName),
 
-                                  const SizedBox(height: 25),
+                                      const SizedBox(height: 25),
 
-                                  _buildHeader("Email"),
-                                  _buildValue(email),
+                                      _buildHeader("Email"),
+                                      _buildValue(email),
 
-                                  const SizedBox(height: 25),
+                                      const SizedBox(height: 25),
 
-                                  _buildHeader("Saved Recipes"),
-                                  _buildValue(savedRecipesCount),
-                                ],
-                              ),
+                                      _buildHeader("Saved Recipes"),
+                                      _buildValue(savedRecipesCount),
+                                    ],
+                                  ),
                       ),
 
                       //<----stacked circular Avatar with Initials ----->
@@ -310,5 +312,59 @@ class _ProfileSectionState extends State<ProfileSection> {
     }
 
     return (parts.first[0] + parts.last[0]).toUpperCase();
+  }
+
+  //<---helper to catch error when supabase is not retriving due to internet issues or no internet ---->
+  Widget _buildOfflineSticker() {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+        margin: const EdgeInsets.symmetric(vertical: 50, horizontal: 20),
+        decoration: BoxDecoration(
+          color: Colors.orangeAccent.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.orangeAccent, width: 2),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.wifi_off, size: 60, color: Colors.orangeAccent),
+            const SizedBox(height: 15),
+            Text(
+              "You're offline!\nCannot load your profile",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.dmSans(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.orangeAccent.shade700,
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton.icon(
+              onPressed: () {
+                setState(() {
+                 isLoading = true;
+                 isOffline = false;
+                });
+                _loadUserData();
+              },
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              label: const Text("Retry",
+                style: TextStyle(
+                color: Colors.white,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFf06644),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
   }
 }
