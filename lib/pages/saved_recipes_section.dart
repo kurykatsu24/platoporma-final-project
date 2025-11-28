@@ -14,6 +14,7 @@ class _SavedSectionState extends State<SavedSection> {
   String selected = "recent"; //pill state
   List<Map<String, dynamic>> savedRecipes = [];
   bool loading = true;
+  bool offline = false;
 
   @override
   void initState() {
@@ -25,17 +26,28 @@ class _SavedSectionState extends State<SavedSection> {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) return;
 
-    final response = await Supabase.instance.client
-        .from('saved_recipes')
-        .select('id, recipe_id, initial_recipe_json, created_at')
-        .eq('user_id', user.id)
-        .order('created_at', ascending: false);
+    try {
+      final response = await Supabase.instance.client
+          .from('saved_recipes')
+          .select('id, recipe_id, initial_recipe_json, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', ascending: false);
 
-    if (mounted) {
-      setState(() {
-        savedRecipes = response;
-        loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          savedRecipes = response;
+          loading = false;
+          offline = false; // success
+        });
+      }
+    } catch (e) {
+      // socket exception / dns / supabase unreachable → offline UI
+      if (mounted) {
+        setState(() {
+          loading = false;
+          offline = true;
+        });
+      }
     }
   }
 
@@ -131,7 +143,7 @@ class _SavedSectionState extends State<SavedSection> {
             ),
           ),
 
-          // ---------- CONTENT ----------
+          //<---------- Contents---------->
           SliverToBoxAdapter(
             child: loading
                 ? const Center(
@@ -140,7 +152,9 @@ class _SavedSectionState extends State<SavedSection> {
                       child: CircularProgressIndicator(),
                     ),
                   )
-                : _buildSavedList(),
+                : offline
+                    ? _buildOfflineSticker()
+                    : _buildSavedList(),
           ),
         ],
       ),
@@ -221,6 +235,59 @@ class _SavedSectionState extends State<SavedSection> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  //<---helper to catch error when supabase is not retriving due to internet issues or no internet ---->
+  Widget _buildOfflineSticker() {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+        margin: const EdgeInsets.symmetric(vertical: 50, horizontal: 20),
+        decoration: BoxDecoration(
+          color: Colors.orangeAccent.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.orangeAccent, width: 2),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.wifi_off, size: 60, color: Colors.orangeAccent),
+            const SizedBox(height: 15),
+            Text(
+              "You're offline!\nSaved recipes need internet to sync",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.dmSans(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.orangeAccent.shade700,
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton.icon(
+              onPressed: () {
+                setState(() {
+                  loading = true;
+                });
+                _loadSavedRecipes();
+              },
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              label: const Text("Retry",
+                style: TextStyle(
+                color: Colors.white,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFf06644),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+              ),
+            )
+          ],
         ),
       ),
     );

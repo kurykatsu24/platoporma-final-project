@@ -534,7 +534,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
     );
   }
 
-
+  //build results with grid, also with fallback UI
   Widget _buildResultsGrid(BuildContext context) {
     if (_isLoading) {
       return const Padding(
@@ -544,16 +544,77 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
     }
 
     if (_error != null) {
+      final bool isOffline = _error!.contains("Failed host lookup") ||
+          _error!.contains("SocketException") ||
+          _error!.contains("ClientException");
+
+      if (isOffline) {
+        return Padding(
+          padding: const EdgeInsets.only(top: 40, bottom: 30),
+          child: _buildOfflineSticker(),
+        );
+      }
+
+          _error!.contains("ClientException");
+
+    if (isOffline) {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 30),
-        child: Center(
-          child: Text(
-            'Error: $_error',
-            style: GoogleFonts.dmSans(fontSize: 14, color: Colors.red),
-          ),
-        ),
+        padding: const EdgeInsets.only(top: 40, bottom: 30),
+        child: _buildOfflineSticker(),
       );
     }
+
+    //non-offline error fallback
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Column(
+        children: [
+          Text(
+            "Something went wrong...",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.dmSans(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: primaryText,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Please try again.",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.dmSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: primaryText.withOpacity(0.7),
+            ),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton.icon(
+            onPressed: _performSearch,
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            label: Text(
+              "Retry",
+              style: GoogleFonts.dmSans(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEE795C),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 26,
+                vertical: 14,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
     if (_results.isEmpty) {
       return Padding(
@@ -574,23 +635,21 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(left: 10, right: 10, bottom: 15),
+      padding: const EdgeInsets.only(left: 7, right: 7, bottom: 6),
       child: MasonryGridView.count(
         padding: EdgeInsets.zero,
-        physics: const NeverScrollableScrollPhysics(), // outer scroll handles scroll
+        physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         crossAxisCount: 2,
-        mainAxisSpacing: 5,
-        crossAxisSpacing: 5,
+        mainAxisSpacing: 2,
+        crossAxisSpacing: 2,
         itemCount: _results.length,
         itemBuilder: (context, index) {
           final item = _results[index];
 
-          // Wrap existing RecipeCard in a Stack to overlay flag at top-right
           return Stack(
             clipBehavior: Clip.none,
             children: [
-              // underlying card
               RecipeCard(
                 recipeId: item.id,
                 recipeJson: item.recipeJson,
@@ -606,7 +665,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                     context,
                     MaterialPageRoute(
                       builder: (_) => RecipeMainScreen(
-                        recipeId: item.id,                      
+                        recipeId: item.id,
                         recipeJson: fullJson,
                         recipeName: item.name,
                         isIngredientSearch: _isIngredientSearch,
@@ -620,7 +679,6 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                 },
               ),
 
-              // positioned flag
               if (_isIngredientSearch)
                 Positioned(
                   right: 8,
@@ -630,6 +688,37 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
             ],
           );
         },
+      ),
+    );
+  }
+
+  //<---helper to catch error when supabase is not retriving due to internet issues or no internet ---->
+  Widget _buildOfflineSticker() {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+        margin: const EdgeInsets.symmetric(vertical: 50, horizontal: 20),
+        decoration: BoxDecoration(
+          color: Colors.orangeAccent.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.orangeAccent, width: 2),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.wifi_off, size: 60, color: Colors.orangeAccent),
+            const SizedBox(height: 15),
+            Text(
+              "You're offline!\nGo back and connect to view results",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.dmSans(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.orangeAccent.shade700,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
