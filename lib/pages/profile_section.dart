@@ -17,6 +17,7 @@ class _ProfileSectionState extends State<ProfileSection> {
   String email = "";
   String savedRecipesCount = "Loading...";
   bool isLoading = true;
+  bool isOffline = false;
 
   @override
   void initState() {
@@ -56,6 +57,23 @@ class _ProfileSectionState extends State<ProfileSection> {
         savedRecipesCount = saved.length.toString();
       }
     } catch (e) {
+      final errorText = e.toString();
+
+      // detect offline state
+      final bool offlineError =
+          errorText.contains("Failed host lookup") ||
+          errorText.contains("SocketException") ||
+          errorText.contains("ClientException");
+
+      if (offlineError) {
+        setState(() {
+          isLoading = false;
+          isOffline = true;   // <-- NEW FLAG (add this as a field)
+        });
+        return;
+      }
+      
+      //normal error fallback
       fullName = "Unknown";
       email = "Unknown";
       savedRecipesCount = "None";

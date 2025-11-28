@@ -356,7 +356,7 @@ class _HomePageSectionState extends State<HomePageSection> {
             Icon(Icons.wifi_off, size: 60, color: Colors.orangeAccent),
             const SizedBox(height: 15),
             Text(
-              "Oops! No internet connection.\nConnect to see the latest recipes.",
+              "Oops! No internet connection.\nConnect to see the latest recipes",
               textAlign: TextAlign.center,
               style: GoogleFonts.dmSans(
                 fontSize: 16,
